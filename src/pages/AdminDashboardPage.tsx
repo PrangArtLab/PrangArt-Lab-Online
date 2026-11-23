@@ -10,7 +10,6 @@ import {
   FileText,
   FolderKanban,
   LayoutDashboard,
-  Lock,
   LogIn,
   LogOut,
   MessageSquare,
@@ -27,6 +26,7 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { DocumentsModal, type DocumentModalKind } from '../components/DocumentsModal';
+import { StudioBrandLogo } from '../components/StudioBrandMarks';
 import { TRACKER_MILESTONES, useStudio } from '../context/StudioContext';
 import {
   formatDateShortID,
@@ -60,7 +60,6 @@ export function AdminDashboardPage() {
     registeredClients,
     catalog,
     siteContent,
-    clientUser,
     loginAdminWithGoogle,
     logoutAdmin,
     refreshAdminDashboard,
@@ -343,15 +342,15 @@ export function AdminDashboardPage() {
     );
   }
 
-  // Independent Admin Login Gate (Firebase Google Sign-In restricted to official studio admin)
+  // Independent Admin Login Gate (No login method or instruction text exposed)
   if (!adminToken) {
-    const handleGoogleAdminLogin = async () => {
+    const handleAdminLogin = async () => {
       setAuthError('');
       setAuthLoading(true);
       try {
         await loginAdminWithGoogle();
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Akun Google tidak memiliki akses Admin.';
+        const msg = err instanceof Error ? err.message : 'Gagal masuk ke Panel Admin.';
         setAuthError(msg);
         showToast('Akses Admin Ditolak', msg, 'error');
       } finally {
@@ -361,28 +360,18 @@ export function AdminDashboardPage() {
 
     return (
       <div className="max-w-md mx-auto px-4 py-16 lg:py-24">
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 sm:p-8 shadow-sm space-y-6">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Admin Studio · Firebase Real-Time</span>
+        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 sm:p-8 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_18px_36px_-18px_rgba(15,23,42,0.12)] dark:shadow-none space-y-6">
+          <div className="text-center space-y-3">
+            <div className="w-16 h-16 mx-auto rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950 flex items-center justify-center p-2">
+              <StudioBrandLogo kind="emblem" variant="auto" className="w-12 h-12" />
             </div>
-            <h1 className="text-2xl font-display font-bold text-slate-900 dark:text-slate-100">
-              Masuk Panel Admin
+            <h1 className="text-2xl font-display font-bold text-slate-950 dark:text-slate-100">
+              Panel Admin
             </h1>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Masuk dengan akun Google resmi pengelola studio (<span className="font-mono">prangart.lab@gmail.com</span>) untuk memantau notifikasi real-time Firestore, memverifikasi pembayaran klien, dan memperbarui status produksi.
-            </p>
           </div>
 
-          {clientUser && (
-            <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/70 dark:bg-amber-950/30 p-3.5 text-xs text-amber-800 dark:text-amber-300">
-              Saat ini Anda masuk sebagai klien ({clientUser.email}). Silakan klik tombol di bawah untuk memilih akun Google Admin.
-            </div>
-          )}
-
           {authError && (
-            <p className="text-xs font-medium text-red-600 dark:text-red-400" role="alert">
+            <p className="text-xs font-medium text-red-600 dark:text-red-400 text-center" role="alert">
               {authError}
             </p>
           )}
@@ -390,11 +379,11 @@ export function AdminDashboardPage() {
           <button
             type="button"
             disabled={authLoading}
-            onClick={() => void handleGoogleAdminLogin()}
-            className="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
+            onClick={() => void handleAdminLogin()}
+            className="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-[0_8px_18px_-6px_rgba(79,70,229,0.45)] dark:shadow-none disabled:opacity-60 text-white text-sm font-semibold transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
           >
             <LogIn className="w-4 h-4" />
-            <span>{authLoading ? 'Memverifikasi Akses Admin...' : 'Masuk Panel Admin dengan Google'}</span>
+            <span>{authLoading ? 'Memproses...' : 'Masuk'}</span>
           </button>
         </div>
       </div>
@@ -618,7 +607,7 @@ export function AdminDashboardPage() {
   };
 
   const inputCls =
-    'w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100';
+    'w-full rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] dark:shadow-none hover:border-slate-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:hover:border-slate-700 dark:focus:border-indigo-500 transition-colors';
 
   const handleExportRecapCsv = () => {
     const esc = (v: string | number | undefined | null) =>
@@ -724,19 +713,18 @@ export function AdminDashboardPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10 pb-24">
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         {/* DEDICATED ADMIN SIDEBAR */}
-        <aside className="w-full lg:w-68 shrink-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-6 lg:sticky lg:top-24">
-          <div className="space-y-1 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <aside className="w-full lg:w-68 shrink-0 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-5 space-y-6 lg:sticky lg:top-24">
+          <div className="space-y-1 border-b border-slate-200/80 dark:border-slate-800 pb-4">
             <div className="flex items-center justify-between gap-2 text-xs font-mono">
-              <span className="text-indigo-600 dark:text-indigo-400 font-semibold">Dashboard Admin</span>
-              <span className="inline-flex items-center gap-1.5 text-slate-500">
-                <span className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+              <span className="text-indigo-700 dark:text-indigo-400 font-semibold">Dashboard Admin</span>
+              <span className={`font-semibold ${wsConnected ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                 {wsConnected ? 'Live' : '...'}
               </span>
             </div>
-            <h1 className="text-lg font-display font-bold text-slate-900 dark:text-slate-100 truncate">
+            <h1 className="text-lg font-display font-bold text-slate-950 dark:text-slate-100 truncate">
               {adminProfile?.name || 'Admin PrangArt Lab'}
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+            <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
               {adminProfile?.email || 'prangart.lab@gmail.com'}
             </p>
           </div>
@@ -749,10 +737,10 @@ export function AdminDashboardPage() {
                   key={item.key}
                   type="button"
                   onClick={() => setActiveTab(item.key)}
-                  className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-colors cursor-pointer ${
+                  className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
                     active
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      ? 'bg-indigo-600 text-white shadow-[0_6px_14px_-6px_rgba(79,70,229,0.5)] dark:shadow-none'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800'
                   }`}
                 >
                   <span className="flex items-center gap-2.5 truncate">
@@ -766,7 +754,7 @@ export function AdminDashboardPage() {
                           ? 'bg-white/20 text-white'
                           : item.key === 'overview'
                           ? 'bg-indigo-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       {item.badge}
@@ -777,11 +765,11 @@ export function AdminDashboardPage() {
             })}
           </nav>
 
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+          <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800 space-y-2">
             <button
               type="button"
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-400 flex items-center justify-center gap-2 cursor-pointer transition-colors"
             >
               {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-indigo-600" /> : <VolumeX className="w-3.5 h-3.5" />}
               <span>{soundEnabled ? 'Suara Notifikasi Aktif' : 'Notifikasi Bisu'}</span>
@@ -791,7 +779,7 @@ export function AdminDashboardPage() {
               type="button"
               disabled={refreshing}
               onClick={() => void handlePartialRefresh()}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-500 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-400 flex items-center justify-center gap-2 cursor-pointer transition-colors"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
               <span>{refreshing ? 'Menyegarkan...' : 'Segarkan Data'}</span>
@@ -800,7 +788,7 @@ export function AdminDashboardPage() {
             <button
               type="button"
               onClick={() => void logoutAdmin()}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/90 dark:border-slate-800 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center justify-center gap-2 cursor-pointer transition-colors"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Keluar Panel Admin</span>
@@ -814,42 +802,42 @@ export function AdminDashboardPage() {
           {activeTab === 'overview' && (
             <section className="space-y-6">
               <div>
-                <h2 className="text-xl font-display font-bold text-slate-900 dark:text-slate-100">
+                <h2 className="text-xl font-display font-bold text-slate-950 dark:text-slate-100">
                   Ringkasan Studio & Notifikasi Real-Time
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                   Setiap pengajuan baru, konfirmasi DP/pelunasan, pembaruan profil, dan catatan klien masuk seketika di sini.
                 </p>
               </div>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-                  <span className="text-xs text-slate-500">Total Proyek</span>
-                  <div className="text-2xl font-mono font-bold text-slate-900 dark:text-slate-100 mt-1 tabular-nums">
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_24px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-5">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Total Proyek</span>
+                  <div className="text-2xl font-mono font-bold text-slate-950 dark:text-slate-100 mt-1 tabular-nums">
                     {kpiStats.total}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-                  <span className="text-xs text-slate-500">Perlu Cek Bayar</span>
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_24px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-5">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Perlu Cek Bayar</span>
                   <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400 mt-1 tabular-nums">
                     {kpiStats.pendingVerify}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-                  <span className="text-xs text-slate-500">Dalam Produksi</span>
-                  <div className="text-2xl font-mono font-bold text-indigo-600 dark:text-indigo-400 mt-1 tabular-nums">
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_24px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-5">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Dalam Produksi</span>
+                  <div className="text-2xl font-mono font-bold text-indigo-700 dark:text-indigo-400 mt-1 tabular-nums">
                     {kpiStats.inProgress}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-                  <span className="text-xs text-slate-500">Lunas & Selesai</span>
-                  <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_24px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-5">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Lunas & Selesai</span>
+                  <div className="text-2xl font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-1 tabular-nums">
                     {kpiStats.completed}
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+              <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-6 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-2">
@@ -955,9 +943,9 @@ export function AdminDashboardPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cari judul karya, nama klien, email, atau ID proyek..."
-                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm"
+                  className="flex-1 rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] dark:shadow-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                 />
-                <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-slate-100/90 dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800">
                   {(
                     [
                       { k: 'all', l: 'Semua' },
@@ -972,8 +960,8 @@ export function AdminDashboardPage() {
                       onClick={() => setStatusFilter(f.k)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
                         statusFilter === f.k
-                          ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
-                          : 'text-slate-500'
+                          ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-slate-100 shadow-[0_1px_3px_rgba(15,23,42,0.08)] dark:shadow-sm'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-950'
                       }`}
                     >
                       {f.l}
@@ -983,7 +971,7 @@ export function AdminDashboardPage() {
               </div>
 
               {filteredProjects.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-12 text-center text-sm text-slate-500">
+                <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-12 text-center text-sm text-slate-600 dark:text-slate-400">
                   Tidak ada proyek yang cocok dengan filter saat ini.
                 </div>
               ) : (
@@ -1000,10 +988,10 @@ export function AdminDashboardPage() {
                       <article
                         key={p.id}
                         id={`admin-proj-${p.id}`}
-                        className={`rounded-2xl border bg-white dark:bg-slate-900 p-6 space-y-5 transition-colors ${
+                        className={`rounded-2xl border bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-6 space-y-5 transition-colors ${
                           isFocused
                             ? 'border-indigo-600 ring-2 ring-indigo-600/20'
-                            : 'border-slate-200 dark:border-slate-800'
+                            : 'border-slate-200/90 dark:border-slate-800'
                         }`}
                       >
                         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -1141,8 +1129,17 @@ export function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              downloadOrderDataPdf(p, siteContent?.settings);
-                              showToast('PDF Diunduh', `Data pemesanan ${p.id} diunduh sebagai PDF.`, 'success');
+                              void downloadOrderDataPdf(p, siteContent?.settings)
+                                .then(() => {
+                                  showToast('PDF Diunduh', `Data pemesanan ${p.id} diunduh sebagai PDF.`, 'success');
+                                })
+                                .catch((err: unknown) => {
+                                  showToast(
+                                    'Gagal Mengunduh PDF',
+                                    err instanceof Error ? err.message : 'Terjadi kendala saat membuat PDF.',
+                                    'error'
+                                  );
+                                });
                             }}
                             className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
                           >
@@ -1152,7 +1149,7 @@ export function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => setDocModal({ project: p, kind: 'order_pdf' })}
-                            className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+                            className="px-3 py-2 rounded-xl border border-slate-300/90 dark:border-slate-700 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 inline-flex items-center gap-1.5 cursor-pointer transition-colors"
                           >
                             <FileText className="w-3.5 h-3.5" />
                             <span>Brief / Rincian</span>
@@ -1160,21 +1157,21 @@ export function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => setDocModal({ project: p, kind: 'contract' })}
-                            className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer"
+                            className="px-3 py-2 rounded-xl border border-slate-300/90 dark:border-slate-700 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                           >
                             SPK
                           </button>
                           <button
                             type="button"
                             onClick={() => setDocModal({ project: p, kind: 'invoice_dp' })}
-                            className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer"
+                            className="px-3 py-2 rounded-xl border border-slate-300/90 dark:border-slate-700 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                           >
                             Invoice DP
                           </button>
                           <button
                             type="button"
                             onClick={() => setDocModal({ project: p, kind: 'invoice_final' })}
-                            className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer"
+                            className="px-3 py-2 rounded-xl border border-slate-300/90 dark:border-slate-700 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                           >
                             Invoice Pelunasan
                           </button>
@@ -1201,7 +1198,7 @@ export function AdminDashboardPage() {
                         {/* Production Stage, Finishing Date, Master Link & Finishing Notes */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
                           <div className="lg:col-span-4">
-                            <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
                               Tahap Produksi
                             </label>
                             <select
@@ -1211,7 +1208,7 @@ export function AdminDashboardPage() {
                               onChange={(e) =>
                                 void runProjectUpdate(p.id, { productionStatus: e.target.value })
                               }
-                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-xs"
+                              className="w-full rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                             >
                               {TRACKER_MILESTONES.map((m) => (
                                 <option key={m} value={m}>
@@ -1222,7 +1219,7 @@ export function AdminDashboardPage() {
                           </div>
 
                           <div className="lg:col-span-4">
-                            <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
                               Tanggal Finishing
                             </label>
                             <div className="flex gap-2">
@@ -1232,7 +1229,7 @@ export function AdminDashboardPage() {
                                 onChange={(e) =>
                                   setFinishingDateInputs((prev) => ({ ...prev, [p.id]: e.target.value }))
                                 }
-                                className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-xs font-mono"
+                                className="flex-1 rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs font-mono text-slate-900 dark:text-slate-100 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                               />
                               <button
                                 type="button"
@@ -1243,7 +1240,7 @@ export function AdminDashboardPage() {
                                     finishingNotes: finishingNotesVal,
                                   })
                                 }
-                                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold hover:border-indigo-500 shrink-0 cursor-pointer"
+                                className="px-3 py-2 rounded-xl border border-slate-300/90 dark:border-slate-700 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 shrink-0 cursor-pointer transition-colors"
                               >
                                 Simpan Tgl
                               </button>
@@ -1251,7 +1248,7 @@ export function AdminDashboardPage() {
                           </div>
 
                           <div className="lg:col-span-4">
-                            <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
                               Tautan Hasil Karya / Master File
                             </label>
                             <div className="flex gap-2">
@@ -1262,7 +1259,7 @@ export function AdminDashboardPage() {
                                   setMasterInputs((prev) => ({ ...prev, [p.id]: e.target.value }))
                                 }
                                 placeholder="https://drive.google.com/..."
-                                className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-xs"
+                                className="flex-1 rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                               />
                               <button
                                 type="button"
@@ -1275,7 +1272,7 @@ export function AdminDashboardPage() {
                                   }
                                   void runProjectUpdate(p.id, { masterFileUrl: trimmed });
                                 }}
-                                className="px-3 py-2 rounded-xl bg-slate-900 dark:bg-white disabled:opacity-60 text-white dark:text-slate-900 text-xs font-semibold shrink-0 cursor-pointer"
+                                className="px-3 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 disabled:opacity-60 text-white dark:text-slate-900 text-xs font-semibold shrink-0 cursor-pointer transition-colors"
                               >
                                 Simpan Link
                               </button>
@@ -1290,7 +1287,7 @@ export function AdminDashboardPage() {
                               setFinishingNotesInputs((prev) => ({ ...prev, [p.id]: e.target.value }))
                             }
                             placeholder="Catatan hasil karya & finishing studio (format WAV/MP3, stem, keterangan partitur)..."
-                            className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2 text-xs"
+                            className="flex-1 rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                           />
                           <button
                             type="button"
@@ -1301,7 +1298,7 @@ export function AdminDashboardPage() {
                                 finishingNotes: finishingNotesVal,
                               })
                             }
-                            className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold hover:border-indigo-500 shrink-0 cursor-pointer"
+                            className="px-3.5 py-2 rounded-xl border border-slate-300/90 dark:border-slate-700 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 shrink-0 cursor-pointer transition-colors"
                           >
                             Simpan Catatan Finishing
                           </button>
@@ -1424,7 +1421,7 @@ export function AdminDashboardPage() {
                                 }
                               }}
                               placeholder="Tulis balasan atau progres untuk klien (klien menerima notifikasi langsung)..."
-                              className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2 text-xs"
+                              className="flex-1 rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                             />
                             <button
                               type="button"
@@ -1436,7 +1433,7 @@ export function AdminDashboardPage() {
                                   setReplyInputs((prev) => ({ ...prev, [p.id]: '' }))
                                 );
                               }}
-                              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer shrink-0"
+                              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer shrink-0 shadow-[0_6px_14px_-6px_rgba(79,70,229,0.45)] dark:shadow-none transition-colors"
                             >
                               <Send className="w-3.5 h-3.5" />
                               <span>Balas Klien</span>
@@ -1467,15 +1464,24 @@ export function AdminDashboardPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      downloadMasterRecapPdf(
+                      void downloadMasterRecapPdf(
                         recapProjects,
                         registeredClients,
                         siteContent?.settings,
                         `${recapServiceFilter === 'all' ? 'Semua Lini' : recapServiceFilter} · ${recapPayFilter}`
-                      );
-                      showToast('PDF Rekap Diunduh', 'Buku rekapitulasi studio berhasil diunduh sebagai PDF.', 'success');
+                      )
+                        .then(() => {
+                          showToast('PDF Rekap Diunduh', 'Buku rekapitulasi studio berhasil diunduh sebagai PDF.', 'success');
+                        })
+                        .catch((err: unknown) => {
+                          showToast(
+                            'Gagal Mengunduh PDF',
+                            err instanceof Error ? err.message : 'Terjadi kendala saat membuat PDF.',
+                            'error'
+                          );
+                        });
                     }}
-                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer shadow-[0_6px_16px_-6px_rgba(79,70,229,0.5)] dark:shadow-none transition-colors"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Unduh Rekap (.pdf)</span>
@@ -1483,7 +1489,7 @@ export function AdminDashboardPage() {
                   <button
                     type="button"
                     onClick={handleExportRecapCsv}
-                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-indigo-500 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl border border-slate-300/90 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
                   >
                     <FileSpreadsheet className="w-3.5 h-3.5" />
                     <span>Unduh CSV / Excel</span>
@@ -1493,30 +1499,30 @@ export function AdminDashboardPage() {
 
               {/* Financial & Output Summary KPIs */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-                  <span className="text-xs text-slate-500">Total Nilai Kontrak</span>
-                  <div className="text-xl font-mono font-bold text-slate-900 dark:text-slate-100 mt-1 tabular-nums">
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_24px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-5">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Total Nilai Kontrak</span>
+                  <div className="text-xl font-mono font-bold text-slate-950 dark:text-slate-100 mt-1 tabular-nums">
                     {formatRupiah(recapTotals.totalContract)}
                   </div>
                   <span className="text-[11px] text-slate-500">{recapProjects.length} proyek terfilter</span>
                 </div>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-                  <span className="text-xs text-slate-500">Dana Masuk Terverifikasi</span>
-                  <div className="text-xl font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_24px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-5">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Dana Masuk Terverifikasi</span>
+                  <div className="text-xl font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-1 tabular-nums">
                     {formatRupiah(recapTotals.totalCollected)}
                   </div>
                   <span className="text-[11px] text-slate-500">DP &amp; Pelunasan tervalidasi</span>
                 </div>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-                  <span className="text-xs text-slate-500">Sisa Tagihan / Piutang</span>
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_24px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-5">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Sisa Tagihan / Piutang</span>
                   <div className="text-xl font-mono font-bold text-amber-600 dark:text-amber-400 mt-1 tabular-nums">
                     {formatRupiah(recapTotals.totalOutstanding)}
                   </div>
                   <span className="text-[11px] text-slate-500">Menunggu DP / Pelunasan</span>
                 </div>
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-                  <span className="text-xs text-slate-500">Karya Finishing / Selesai</span>
-                  <div className="text-xl font-mono font-bold text-indigo-600 dark:text-indigo-400 mt-1 tabular-nums">
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_24px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-5">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Karya Finishing / Selesai</span>
+                  <div className="text-xl font-mono font-bold text-indigo-700 dark:text-indigo-400 mt-1 tabular-nums">
                     {recapTotals.finishedCount} / {recapProjects.length}
                   </div>
                   <span className="text-[11px] text-slate-500">Memiliki jadwal/selesai</span>
@@ -1524,19 +1530,19 @@ export function AdminDashboardPage() {
               </div>
 
               {/* Filter Bar + Recap Sub-View Tabs */}
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-3">
+              <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-4 space-y-3">
                 <div className="flex flex-col lg:flex-row gap-3">
                   <input
                     type="search"
                     value={recapSearch}
                     onChange={(e) => setRecapSearch(e.target.value)}
                     placeholder="Cari nama konsumen, WhatsApp, email, judul karya, atau ID..."
-                    className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-2 text-xs"
+                    className="flex-1 rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                   />
                   <select
                     value={recapServiceFilter}
                     onChange={(e) => setRecapServiceFilter(e.target.value as 'all' | ServiceLineKey)}
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-xs"
+                    className="rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                   >
                     <option value="all">Semua Layanan</option>
                     <option value="tari">Musik Tari</option>
@@ -1548,7 +1554,7 @@ export function AdminDashboardPage() {
                     onChange={(e) =>
                       setRecapPayFilter(e.target.value as 'all' | 'awaiting_dp' | 'dp_paid' | 'lunas')
                     }
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-xs"
+                    className="rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                   >
                     <option value="all">Semua Status Bayar</option>
                     <option value="awaiting_dp">Menunggu DP</option>
@@ -1557,7 +1563,7 @@ export function AdminDashboardPage() {
                   </select>
                 </div>
 
-                <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-200/80 dark:border-slate-800">
                   {(
                     [
                       { key: 'works', label: 'Karya, Tanggal Finishing & Dokumen' },
@@ -1569,10 +1575,10 @@ export function AdminDashboardPage() {
                       key={sub.key}
                       type="button"
                       onClick={() => setRecapView(sub.key)}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold cursor-pointer ${
+                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
                         recapView === sub.key
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
+                          ? 'bg-indigo-600 text-white shadow-[0_6px_14px_-6px_rgba(79,70,229,0.45)] dark:shadow-none'
+                          : 'bg-slate-100/90 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-800'
                       }`}
                     >
                       {sub.label}
@@ -1583,10 +1589,10 @@ export function AdminDashboardPage() {
 
               {/* SUB-VIEW 1: KARYA, TANGGAL FINISHING, HASIL KARYA & DOKUMEN */}
               {recapView === 'works' && (
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500">
+                      <thead className="bg-slate-50/90 dark:bg-slate-950 border-b border-slate-200/90 dark:border-slate-800 text-slate-600 dark:text-slate-400">
                         <tr>
                           <th className="px-4 py-3 font-semibold">Karya &amp; Data Lengkap</th>
                           <th className="px-4 py-3 font-semibold">Konsumen</th>
@@ -1675,7 +1681,19 @@ export function AdminDashboardPage() {
                                   <div className="flex flex-wrap gap-1.5">
                                     <button
                                       type="button"
-                                      onClick={() => downloadOrderDataPdf(p, siteContent?.settings)}
+                                      onClick={() => {
+                                        void downloadOrderDataPdf(p, siteContent?.settings)
+                                          .then(() => {
+                                            showToast('PDF Diunduh', `Data pemesanan ${p.id} diunduh sebagai PDF.`, 'success');
+                                          })
+                                          .catch((err: unknown) => {
+                                            showToast(
+                                              'Gagal Mengunduh PDF',
+                                              err instanceof Error ? err.message : 'Terjadi kendala saat membuat PDF.',
+                                              'error'
+                                            );
+                                          });
+                                      }}
                                       className="px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-semibold text-[11px] cursor-pointer"
                                     >
                                       Data PDF
@@ -1740,10 +1758,10 @@ export function AdminDashboardPage() {
 
               {/* SUB-VIEW 2: RINCIAN KEUANGAN & TRANSFER */}
               {recapView === 'finance' && (
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500">
+                      <thead className="bg-slate-50/90 dark:bg-slate-950 border-b border-slate-200/90 dark:border-slate-800 text-slate-600 dark:text-slate-400">
                         <tr>
                           <th className="px-4 py-3 font-semibold">Proyek &amp; Konsumen</th>
                           <th className="px-4 py-3 font-semibold text-right">Kontrak</th>
@@ -1833,13 +1851,13 @@ export function AdminDashboardPage() {
                           );
                         })}
                       </tbody>
-                      <tfoot className="bg-slate-50 dark:bg-slate-950 border-t-2 border-slate-200 dark:border-slate-800 font-mono font-bold">
+                      <tfoot className="bg-slate-50/90 dark:bg-slate-950 border-t-2 border-slate-200/90 dark:border-slate-800 font-mono font-bold text-slate-900 dark:text-slate-100">
                         <tr>
                           <td className="px-4 py-3 font-sans">TOTAL ({recapProjects.length} PROYEK)</td>
                           <td className="px-4 py-3 text-right">{formatRupiah(recapTotals.totalContract)}</td>
                           <td className="px-4 py-3 text-slate-500">{formatRupiah(recapTotals.dpObligation)}</td>
                           <td className="px-4 py-3 text-slate-500">-</td>
-                          <td className="px-4 py-3 text-right text-emerald-600 dark:text-emerald-400">
+                          <td className="px-4 py-3 text-right text-emerald-700 dark:text-emerald-400">
                             {formatRupiah(recapTotals.totalCollected)}
                           </td>
                           <td className="px-4 py-3 text-right text-amber-600 dark:text-amber-400">
@@ -1855,10 +1873,10 @@ export function AdminDashboardPage() {
 
               {/* SUB-VIEW 3: REKAP DATA KONSUMEN */}
               {recapView === 'clients' && (
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500">
+                      <thead className="bg-slate-50/90 dark:bg-slate-950 border-b border-slate-200/90 dark:border-slate-800 text-slate-600 dark:text-slate-400">
                         <tr>
                           <th className="px-4 py-3 font-semibold">Konsumen / Sanggar</th>
                           <th className="px-4 py-3 font-semibold">Kontak Email &amp; WA</th>
@@ -1935,13 +1953,13 @@ export function AdminDashboardPage() {
 
           {/* TAB 3: CATALOG EDITOR */}
           {activeTab === 'catalog' && catalogDraft && (
-            <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-6">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
+            <section className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_14px_30px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-6 sm:p-8 space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/90 dark:border-slate-800 pb-4">
                 <div>
-                  <h2 className="text-lg font-display font-bold text-slate-900 dark:text-slate-100">
-                    Pengaturan Tarif, Fasilitas & Alur Layanan
+                  <h2 className="text-lg font-display font-bold text-slate-950 dark:text-slate-100">
+                    Pengaturan Tarif, Fasilitas &amp; Alur Layanan
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                     Perubahan langsung disinkronkan ke halaman Pemesanan Klien.
                   </p>
                 </div>
@@ -1963,7 +1981,7 @@ export function AdminDashboardPage() {
                       <button
                         type="button"
                         onClick={() => setConfirmResetCatalog(false)}
-                        className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 font-semibold cursor-pointer"
+                        className="px-3 py-2 rounded-xl border border-slate-300/90 dark:border-slate-700 bg-white dark:bg-transparent font-semibold cursor-pointer"
                       >
                         Batal
                       </button>
@@ -1973,7 +1991,7 @@ export function AdminDashboardPage() {
                       type="button"
                       disabled={catalogSaving}
                       onClick={() => setConfirmResetCatalog(true)}
-                      className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer disabled:opacity-60"
+                      className="px-4 py-2 rounded-xl border border-slate-300/90 dark:border-slate-700 bg-white dark:bg-transparent text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold cursor-pointer disabled:opacity-60 transition-colors"
                     >
                       Reset Standar
                     </button>
@@ -1982,7 +2000,7 @@ export function AdminDashboardPage() {
                     type="button"
                     disabled={catalogSaving}
                     onClick={() => void handleSaveCatalog()}
-                    className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-semibold cursor-pointer"
+                    className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-semibold cursor-pointer shadow-[0_6px_16px_-6px_rgba(79,70,229,0.5)] dark:shadow-none transition-colors"
                   >
                     {catalogSaving ? 'Menyimpan...' : 'Simpan Katalog'}
                   </button>
@@ -1995,14 +2013,14 @@ export function AdminDashboardPage() {
                   return (
                     <div
                       key={svcKey}
-                      className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-5 space-y-5"
+                      className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/85 dark:bg-slate-950 p-5 space-y-5"
                     >
-                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
-                        <h3 className="text-sm font-display font-bold text-indigo-600 dark:text-indigo-400">
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/90 dark:border-slate-800 pb-3">
+                        <h3 className="text-sm font-display font-bold text-indigo-700 dark:text-indigo-400">
                           {svc.label}
                         </h3>
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-slate-500">Add-on Vokal/Player (Rp):</span>
+                          <span className="text-slate-600 dark:text-slate-400">Add-on Vokal/Player (Rp):</span>
                           <input
                             type="number"
                             value={svc.addonPrice}
@@ -2016,7 +2034,7 @@ export function AdminDashboardPage() {
                                   : prev
                               )
                             }
-                            className="w-32 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 font-mono text-xs"
+                            className="w-32 rounded-lg border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 font-mono text-xs text-slate-900 dark:text-slate-100 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                           />
                         </div>
                       </div>
@@ -2027,7 +2045,7 @@ export function AdminDashboardPage() {
                           return (
                             <div
                               key={pkgKey}
-                              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-3"
+                              className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:shadow-none p-4 space-y-3"
                             >
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                 <div>
@@ -2166,9 +2184,9 @@ export function AdminDashboardPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <form
                   onSubmit={handleSaveSettings}
-                  className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4"
+                  className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-6 space-y-4"
                 >
-                  <h2 className="text-base font-display font-bold text-slate-900 dark:text-slate-100">
+                  <h2 className="text-base font-display font-bold text-slate-950 dark:text-slate-100">
                     Pengaturan Kontak & Rekening Studio
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2252,8 +2270,8 @@ export function AdminDashboardPage() {
                   </button>
                 </form>
 
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5">
-                  <h2 className="text-base font-display font-bold text-slate-900 dark:text-slate-100">
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-6 space-y-5">
+                  <h2 className="text-base font-display font-bold text-slate-950 dark:text-slate-100">
                     Keamanan Firebase &amp; Persistensi Data Republish
                   </h2>
                   <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 space-y-2 text-xs text-slate-600 dark:text-slate-400">
@@ -2307,9 +2325,9 @@ export function AdminDashboardPage() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5">
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-6 space-y-5">
                   <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-base font-display font-bold text-slate-900 dark:text-slate-100">
+                    <h2 className="text-base font-display font-bold text-slate-950 dark:text-slate-100">
                       Kelola Portofolio Manual ({siteContent.portfolio.length})
                     </h2>
                     {editingPortfolioId && (
@@ -2443,9 +2461,9 @@ export function AdminDashboardPage() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5">
+                <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-6 space-y-5">
                   <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-base font-display font-bold text-slate-900 dark:text-slate-100">
+                    <h2 className="text-base font-display font-bold text-slate-950 dark:text-slate-100">
                       Kelola Testimoni Manual ({siteContent.testimonials.length})
                     </h2>
                     {editingTestimonialId && (
@@ -2546,15 +2564,15 @@ export function AdminDashboardPage() {
 
           {/* TAB 5: REGISTERED CLIENTS */}
           {activeTab === 'clients' && (
-            <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h2 className="text-base font-display font-bold text-slate-900 dark:text-slate-100">
+            <section className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200/90 dark:border-slate-800">
+                <h2 className="text-base font-display font-bold text-slate-950 dark:text-slate-100">
                   Akun Klien Terdaftar ({registeredClients.length})
                 </h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500">
+                  <thead className="bg-slate-50/90 dark:bg-slate-950 border-b border-slate-200/90 dark:border-slate-800 text-slate-600 dark:text-slate-400">
                     <tr>
                       <th className="px-6 py-3 font-semibold">Nama Klien</th>
                       <th className="px-6 py-3 font-semibold">Email</th>

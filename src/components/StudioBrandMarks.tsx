@@ -2,6 +2,62 @@ interface StudioLogoProps {
   className?: string;
 }
 
+interface StudioBrandLogoProps {
+  kind?: 'full' | 'emblem';
+  variant?: 'auto' | 'dark-ink' | 'light-ink';
+  className?: string;
+  alt?: string;
+}
+
+export function StudioBrandLogo({
+  kind = 'full',
+  variant = 'auto',
+  className = 'w-12 h-12',
+  alt = 'Logo PrangArt Lab',
+}: StudioBrandLogoProps) {
+  const darkSrc = kind === 'emblem' ? '/assets/brand/emblem-dark.png' : '/assets/brand/logo-dark.png';
+  const lightSrc = kind === 'emblem' ? '/assets/brand/emblem-light.png' : '/assets/brand/logo-light.png';
+
+  if (variant === 'dark-ink') {
+    return (
+      <img
+        src={darkSrc}
+        alt={alt}
+        className={`${className} object-contain select-none`}
+        draggable={false}
+      />
+    );
+  }
+
+  if (variant === 'light-ink') {
+    return (
+      <img
+        src={lightSrc}
+        alt={alt}
+        className={`${className} object-contain select-none`}
+        draggable={false}
+      />
+    );
+  }
+
+  return (
+    <>
+      <img
+        src={darkSrc}
+        alt={alt}
+        className={`${className} object-contain select-none dark:hidden print:block`}
+        draggable={false}
+      />
+      <img
+        src={lightSrc}
+        alt={alt}
+        className={`${className} object-contain select-none hidden dark:block print:hidden`}
+        draggable={false}
+      />
+    </>
+  );
+}
+
 export function StudioLogoSvg({ className = 'w-11 h-11' }: StudioLogoProps) {
   return (
     <svg

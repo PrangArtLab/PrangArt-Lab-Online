@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useStudio } from '../context/StudioContext';
 import { useTheme, type ThemeMode } from '../context/ThemeContext';
+import { StudioBrandLogo } from './StudioBrandMarks';
 
 export function Navbar() {
   const { mode, setMode } = useTheme();
@@ -13,8 +14,8 @@ export function Navbar() {
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `whitespace-nowrap shrink-0 py-1.5 text-sm font-medium transition-colors border-b-2 ${
       isActive
-        ? 'text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
-        : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-slate-100'
+        ? 'text-indigo-700 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
+        : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-slate-950 dark:hover:text-slate-100'
     }`;
 
   const themeOptions: { value: ThemeMode; label: string }[] = [
@@ -33,14 +34,15 @@ export function Navbar() {
 
   return (
     <>
-      <header className="no-print sticky top-0 z-40 h-16 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+      <header className="no-print sticky top-0 z-40 h-16 bg-white/95 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(15,23,42,0.04)] dark:shadow-none">
         <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-6">
-          {/* Zone 1: Single-line Brand Wordmark */}
+          {/* Zone 1: Single-line Brand Emblem + Wordmark */}
           <Link
             to="/"
-            className="text-lg font-display font-bold tracking-tight text-slate-900 dark:text-slate-100 whitespace-nowrap shrink-0"
+            className="inline-flex items-center gap-2.5 text-lg font-display font-bold tracking-tight text-slate-950 dark:text-slate-100 whitespace-nowrap shrink-0"
           >
-            PrangArt Lab
+            <StudioBrandLogo kind="emblem" variant="auto" className="w-8 h-8 shrink-0" />
+            <span>PrangArt Lab</span>
           </Link>
 
           {/* Zone 2: Independent Nav Links (Public + Client + Admin cleanly separated) */}
@@ -69,7 +71,7 @@ export function Navbar() {
                 type="button"
                 onClick={() => setThemeMenuOpen((o) => !o)}
                 aria-label="Pilih tema tampilan"
-                className="h-9 w-9 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-indigo-500/50 transition-colors flex items-center justify-center cursor-pointer"
+                className="h-9 w-9 rounded-lg border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none hover:border-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors flex items-center justify-center cursor-pointer"
               >
                 {mode === 'dark' ? (
                   <Moon className="w-4 h-4" />
@@ -82,7 +84,7 @@ export function Navbar() {
               {themeMenuOpen && (
                 <div
                   onMouseLeave={() => setThemeMenuOpen(false)}
-                  className="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg py-1 z-50"
+                  className="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_12px_28px_-8px_rgba(15,23,42,0.14)] dark:shadow-lg py-1 z-50"
                 >
                   {themeOptions.map((opt) => (
                     <button
@@ -94,8 +96,8 @@ export function Navbar() {
                       }}
                       className={`w-full text-left px-4 py-2.5 text-xs font-medium transition-colors cursor-pointer ${
                         mode === opt.value
-                          ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/50'
-                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          ? 'text-indigo-700 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/50 font-semibold'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                       }`}
                     >
                       {opt.label}
@@ -109,7 +111,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => navigate('/admin')}
-                className="h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-100 hover:border-indigo-500 transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
+                className="h-9 px-3 rounded-lg border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-100 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none hover:border-indigo-400 transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
               >
                 <Bell className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                 <span>Admin</span>
@@ -125,7 +127,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => navigate('/klien')}
-                className="h-9 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
+                className="h-9 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 shadow-[0_1px_2px_rgba(79,70,229,0.28)] dark:shadow-none text-white text-xs font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
               >
                 <User className="w-3.5 h-3.5" />
                 <span className="max-w-[96px] truncate">{clientUser.name.split(' ')[0]}</span>
@@ -138,7 +140,7 @@ export function Navbar() {
             ) : (
               <Link
                 to="/klien"
-                className="h-9 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors flex items-center whitespace-nowrap shrink-0"
+                className="h-9 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 shadow-[0_1px_2px_rgba(79,70,229,0.28)] dark:shadow-none text-white text-xs font-semibold transition-colors flex items-center whitespace-nowrap shrink-0"
               >
                 Masuk Klien
               </Link>
@@ -149,7 +151,7 @@ export function Navbar() {
 
       {/* Compact Mobile Bottom Navigation */}
       <nav
-        className="no-print md:hidden fixed bottom-0 inset-x-0 z-40 h-14 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-2 flex items-center justify-around"
+        className="no-print md:hidden fixed bottom-0 inset-x-0 z-40 h-14 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 shadow-[0_-4px_20px_-10px_rgba(15,23,42,0.12)] dark:shadow-none px-2 flex items-center justify-around"
         aria-label="Navigasi seluler"
       >
         {mobileItems.map((item) => (
@@ -160,7 +162,7 @@ export function Navbar() {
             className={({ isActive }) =>
               `px-2.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
                 isActive
-                  ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60'
+                  ? 'text-indigo-700 dark:text-indigo-400 bg-indigo-50/90 dark:bg-indigo-950/60'
                   : 'text-slate-600 dark:text-slate-400'
               }`
             }

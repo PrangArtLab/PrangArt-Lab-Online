@@ -26,7 +26,7 @@ export function ToastContainer() {
         return (
           <div
             key={toast.id}
-            className="pointer-events-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-lg flex items-start justify-between gap-3"
+            className="pointer-events-auto rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-[0_12px_28px_-8px_rgba(15,23,42,0.16)] dark:shadow-lg flex items-start justify-between gap-3"
           >
             <div className="flex items-start gap-2.5 min-w-0">
               {icon}

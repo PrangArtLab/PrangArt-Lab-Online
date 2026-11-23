@@ -10,7 +10,7 @@ import {
 } from '../lib/format';
 import { downloadOrderDataPdf, downloadStudioDocPdf, type StudioPdfDocKind } from '../lib/pdfExport';
 import type { Project } from '../types';
-import { OwnerSignatureSvg, StudioLogoSvg, StudioStampSvg } from './StudioBrandMarks';
+import { OwnerSignatureSvg, StudioBrandLogo, StudioStampSvg } from './StudioBrandMarks';
 
 export type DocumentModalKind =
   | 'brief'
@@ -59,12 +59,12 @@ export function DocumentsModal({ project, kind, onClose }: DocumentsModalProps) 
       settings.studioBankAccount.trim() !== '1234-5678-9012'
   );
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     try {
       if (normalizedKind === 'order_pdf') {
-        downloadOrderDataPdf(project, settings);
+        await downloadOrderDataPdf(project, settings);
       } else {
-        downloadStudioDocPdf(normalizedKind as StudioPdfDocKind, project, settings);
+        await downloadStudioDocPdf(normalizedKind as StudioPdfDocKind, project, settings);
       }
       showToast('PDF Diunduh', `${titles[normalizedKind]} berhasil diunduh sebagai file PDF.`, 'success');
     } catch (err: unknown) {
@@ -108,25 +108,25 @@ export function DocumentsModal({ project, kind, onClose }: DocumentsModalProps) 
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-3xl max-h-[90vh] flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden">
-        <div className="no-print flex items-center justify-between gap-4 px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-          <h2 className="text-base font-display font-bold text-slate-900 dark:text-slate-100 truncate">
+    <div className="fixed inset-0 z-50 bg-slate-950/60 dark:bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-3xl max-h-[90vh] flex flex-col rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_24px_56px_-16px_rgba(15,23,42,0.28)] dark:shadow-2xl overflow-hidden">
+        <div className="no-print flex items-center justify-between gap-4 px-6 py-4 bg-slate-50/70 dark:bg-slate-900 border-b border-slate-200/90 dark:border-slate-800">
+          <h2 className="text-base font-display font-bold text-slate-950 dark:text-slate-100 truncate">
             {titles[normalizedKind]}
           </h2>
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => window.print()}
-              className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-2 rounded-lg border border-slate-300/90 dark:border-slate-700 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 cursor-pointer transition-colors"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Cetak</span>
             </button>
             <button
               type="button"
-              onClick={handleDownloadPdf}
-              className="px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              onClick={() => void handleDownloadPdf()}
+              className="px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-[0_6px_14px_-6px_rgba(79,70,229,0.5)] dark:shadow-none transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Unduh PDF</span>
@@ -144,10 +144,10 @@ export function DocumentsModal({ project, kind, onClose }: DocumentsModalProps) 
 
         <div className="overflow-y-auto p-6 sm:p-8 text-sm text-slate-800 dark:text-slate-200">
           <div id="printable-document-sheet" className="space-y-6">
-            {/* Document Header with Vector Studio Logo */}
+            {/* Document Header with Official Studio Logo */}
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-3.5">
-                <StudioLogoSvg className="w-11 h-11 shrink-0" />
+                <StudioBrandLogo kind="full" variant="auto" className="w-16 h-16 shrink-0" />
                 <div>
                   <h1 className="text-lg font-display font-bold text-slate-900 dark:text-slate-100 leading-tight">
                     PrangArt Lab — Music Production Studio

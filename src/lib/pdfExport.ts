@@ -20,6 +20,45 @@ export type StudioPdfDocKind =
 const OWNER_FULL_NAME = 'Fikri Yassaar Arrazaq, S.Sn.';
 const OWNER_ROLE_LABEL = 'Founder & Music Director — PrangArt Lab';
 
+let cachedLogoDataUrl: string | null | undefined;
+
+/**
+ * Loads the official PrangArt Lab PNG logo once and caches it as a PNG DataURL for jsPDF.
+ */
+async function loadBrandLogoDataUrl(): Promise<string | null> {
+  if (cachedLogoDataUrl !== undefined) return cachedLogoDataUrl;
+  if (typeof window === 'undefined') return null;
+  try {
+    const res = await fetch('/assets/brand/logo-dark.png', { cache: 'force-cache' });
+    if (!res.ok) throw new Error('Logo HTTP error');
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('Logo decode failed'));
+        image.src = objectUrl;
+      });
+      const size = 512;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas unavailable');
+      ctx.clearRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+      cachedLogoDataUrl = canvas.toDataURL('image/png');
+      return cachedLogoDataUrl;
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  } catch {
+    cachedLogoDataUrl = null;
+    return null;
+  }
+}
+
 function sanitizeFileSlug(str: string): string {
   return str
     .toLowerCase()
@@ -156,7 +195,8 @@ function drawPdfHeader(
   docLabel: string,
   refCode: string,
   dateLabel: string,
-  settings?: StudioSettings
+  settings?: StudioSettings,
+  logoDataUrl?: string | null
 ): number {
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 16;
@@ -165,21 +205,26 @@ function drawPdfHeader(
   doc.setFillColor(67, 56, 202);
   doc.rect(0, 0, pageW, 3.2, 'F');
 
-  // Logo + Studio Identity
-  drawPdfLogo(doc, margin, 11, 14);
+  // Official PrangArt Lab PNG Logo (fallback to vector if image unavailable)
+  if (logoDataUrl) {
+    doc.addImage(logoDataUrl, 'PNG', margin, 9, 17, 17);
+  } else {
+    drawPdfLogo(doc, margin, 11, 14);
+  }
+  const textX = margin + 20.5;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13.5);
   doc.setTextColor(15, 23, 42);
-  doc.text('PrangArt Lab', margin + 18, 16.5);
+  doc.text('PrangArt Lab', textX, 16);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.2);
   doc.setTextColor(100, 116, 139);
-  doc.text('Music Production, Tari & Transkripsi Notasi Studio', margin + 18, 20.8);
+  doc.text('Music Production, Tari & Transkripsi Notasi Studio', textX, 20.5);
   const contactLine = `${settings?.studioAddress || 'Samarinda, Kalimantan Timur'} · ${
     settings?.studioEmail || 'prangart.lab@gmail.com'
   }${settings?.studioWhatsApp ? ` · WA ${settings.studioWhatsApp}` : ''}`;
-  doc.text(contactLine, margin + 18, 24.8);
+  doc.text(contactLine, textX, 24.6);
 
   // Right metadata box
   doc.setFont('courier', 'bold');
@@ -196,9 +241,9 @@ function drawPdfHeader(
   // Separator line
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(0.4);
-  doc.line(margin, 29, pageW - margin, 29);
+  doc.line(margin, 29.5, pageW - margin, 29.5);
 
-  return 35;
+  return 35.5;
 }
 
 function ensurePageSpace(doc: jsPDF, currentY: number, neededHeight: number): number {
@@ -331,7 +376,8 @@ function drawAuthorizationFooter(
  * 1. Download Complete Order Data PDF ("Unduh Data Pemesanan (.pdf)")
  * Executive design with Studio Logo, Consumer Card, Works & Finishing Schedule, Financial Summary, Complete Specs, Synopsis & Notes.
  */
-export function downloadOrderDataPdf(project: Project, settings?: StudioSettings): void {
+export async function downloadOrderDataPdf(project: Project, settings?: StudioSettings): Promise<void> {
+  const logoDataUrl = await loadBrandLogoDataUrl();
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 16;
@@ -342,7 +388,8 @@ export function downloadOrderDataPdf(project: Project, settings?: StudioSettings
     'DATA PEMESANAN KARYA',
     project.id,
     formatDateLongID(project.createdAt),
-    settings
+    settings,
+    logoDataUrl
   );
 
   // Executive Title Card
@@ -456,11 +503,11 @@ export function downloadOrderDataPdf(project: Project, settings?: StudioSettings
  * 2. Download Official Studio Documents as PDF (Invoice DP, Invoice Pelunasan, Kuitansi DP, Kuitansi Pelunasan, SPK, Brief)
  * All official Invoices, Receipts, and Contracts include Studio Logo + Official Stamp + Owner Signature.
  */
-export function downloadStudioDocPdf(
+export async function downloadStudioDocPdf(
   kind: StudioPdfDocKind,
   project: Project,
   settings?: StudioSettings
-): void {
+): Promise<void> {
   const access = getProjectPaymentAccess(project);
   if (kind === 'receipt_dp' && !access.canDownloadDpReceipt) {
     throw new Error('Kuitansi DP 50% hanya dapat diunduh setelah DP diverifikasi Admin.');
@@ -469,6 +516,7 @@ export function downloadStudioDocPdf(
     throw new Error('Kuitansi Pelunasan 100% hanya dapat diunduh setelah pelunasan diverifikasi Admin.');
   }
 
+  const logoDataUrl = await loadBrandLogoDataUrl();
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 16;
@@ -487,7 +535,8 @@ export function downloadStudioDocPdf(
     docLabelMap[kind],
     project.id,
     formatDateLongID(project.createdAt),
-    settings
+    settings,
+    logoDataUrl
   );
 
   const hasBankConfigured = Boolean(
@@ -785,12 +834,13 @@ export function downloadStudioDocPdf(
  * 3. Download Master Studio Recap PDF (Landscape Executive Ledger)
  * Recaps Consumer Data, Artwork Results, Finishing Dates, Complete Works Info, Finance & Available Documents.
  */
-export function downloadMasterRecapPdf(
+export async function downloadMasterRecapPdf(
   projects: Project[],
   clients: ClientUser[],
   settings?: StudioSettings,
   filterLabel = 'Semua Proyek'
-): void {
+): Promise<void> {
+  const logoDataUrl = await loadBrandLogoDataUrl();
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 14;
@@ -798,18 +848,23 @@ export function downloadMasterRecapPdf(
   // Header
   doc.setFillColor(67, 56, 202);
   doc.rect(0, 0, pageW, 3, 'F');
-  drawPdfLogo(doc, margin, 9, 13);
+  if (logoDataUrl) {
+    doc.addImage(logoDataUrl, 'PNG', margin, 7.5, 16, 16);
+  } else {
+    drawPdfLogo(doc, margin, 9, 13);
+  }
 
+  const titleX = margin + 19;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   doc.setTextColor(15, 23, 42);
-  doc.text('PrangArt Lab — Laporan Rekapitulasi Studio', margin + 16, 14.5);
+  doc.text('PrangArt Lab — Laporan Rekapitulasi Studio', titleX, 14.5);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.2);
   doc.setTextColor(100, 116, 139);
   doc.text(
     `Rekap Konsumen, Hasil Karya, Tanggal Finishing, Keuangan & Dokumen · Filter: ${filterLabel}`,
-    margin + 16,
+    titleX,
     19.5
   );
   doc.setFont('courier', 'normal');

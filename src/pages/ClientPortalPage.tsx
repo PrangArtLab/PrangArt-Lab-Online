@@ -242,19 +242,18 @@ export function ClientPortalPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10 pb-24">
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         {/* DEDICATED CLIENT SIDEBAR */}
-        <aside className="w-full lg:w-68 shrink-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-6 lg:sticky lg:top-24">
-          <div className="space-y-1 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <aside className="w-full lg:w-68 shrink-0 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-5 space-y-6 lg:sticky lg:top-24">
+          <div className="space-y-1 border-b border-slate-200/80 dark:border-slate-800 pb-4">
             <div className="flex items-center justify-between gap-2 text-xs font-mono">
-              <span className="text-indigo-600 dark:text-indigo-400 font-semibold">Dashboard Klien</span>
-              <span className="inline-flex items-center gap-1.5 text-slate-500">
-                <span className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+              <span className="text-indigo-700 dark:text-indigo-400 font-semibold">Dashboard Klien</span>
+              <span className={`font-semibold ${wsConnected ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                 {wsConnected ? 'Live' : '...'}
               </span>
             </div>
-            <h1 className="text-lg font-display font-bold text-slate-900 dark:text-slate-100 truncate">
+            <h1 className="text-lg font-display font-bold text-slate-950 dark:text-slate-100 truncate">
               {clientUser.name}
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{clientUser.email}</p>
+            <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{clientUser.email}</p>
           </div>
 
           <nav className="grid grid-cols-2 lg:grid-cols-1 gap-1.5" aria-label="Menu Ruang Klien">
@@ -265,10 +264,10 @@ export function ClientPortalPage() {
                   key={item.key}
                   type="button"
                   onClick={() => setActiveTab(item.key)}
-                  className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-colors cursor-pointer ${
+                  className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer ${
                     active
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      ? 'bg-indigo-600 text-white shadow-[0_6px_14px_-6px_rgba(79,70,229,0.5)] dark:shadow-none'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800'
                   }`}
                 >
                   <span className="flex items-center gap-2.5 truncate">
@@ -282,7 +281,7 @@ export function ClientPortalPage() {
                           ? 'bg-white/20 text-white'
                           : item.key === 'notifications'
                           ? 'bg-indigo-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       {item.badge}
@@ -293,12 +292,12 @@ export function ClientPortalPage() {
             })}
           </nav>
 
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+          <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800 space-y-2">
             <button
               type="button"
               disabled={refreshing}
               onClick={() => void handlePartialRefresh()}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-500 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center justify-center gap-2 cursor-pointer transition-colors"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
               <span>{refreshing ? 'Menyegarkan...' : 'Segarkan Data'}</span>
@@ -307,7 +306,7 @@ export function ClientPortalPage() {
             <button
               type="button"
               onClick={() => void logoutClient()}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/90 dark:border-slate-800 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center justify-center gap-2 cursor-pointer transition-colors"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Keluar Akun Klien</span>
@@ -379,12 +378,12 @@ export function ClientPortalPage() {
                     return (
                       <article
                         key={project.id}
-                        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-6"
+                        className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-6 sm:p-8 space-y-6"
                       >
-                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-slate-200/80 dark:border-slate-800 pb-5">
                           <div className="space-y-1">
-                            <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-1.5">
-                              <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                            <div className="text-xs text-slate-600 dark:text-slate-400 flex flex-wrap items-center gap-1.5">
+                              <span className="font-semibold text-indigo-700 dark:text-indigo-400">
                                 {project.serviceLineLabel}
                               </span>
                               <span aria-hidden="true">·</span>
@@ -392,10 +391,10 @@ export function ClientPortalPage() {
                               <span aria-hidden="true">·</span>
                               <span className="font-mono tabular-nums">{project.id}</span>
                             </div>
-                            <h3 className="text-xl font-display font-bold text-slate-900 dark:text-slate-100">
+                            <h3 className="text-xl font-display font-bold text-slate-950 dark:text-slate-100">
                               {project.judul}
                             </h3>
-                            <p className="text-xs text-slate-500 font-mono tabular-nums">
+                            <p className="text-xs text-slate-600 dark:text-slate-400 font-mono tabular-nums">
                               Durasi {project.durasi} · Total {formatRupiah(project.totalPrice)} · Diajukan {formatDateTimeID(project.createdAt)}
                               {project.finishingDate ? ` · Finishing ${formatDateShortID(project.finishingDate)}` : ''}
                             </p>
@@ -405,10 +404,19 @@ export function ClientPortalPage() {
                             <button
                               type="button"
                               onClick={() => {
-                                downloadOrderDataPdf(project, studioBank);
-                                showToast('PDF Diunduh', `Data pemesanan ${project.id} berhasil diunduh sebagai PDF.`, 'success');
+                                void downloadOrderDataPdf(project, studioBank)
+                                  .then(() => {
+                                    showToast('PDF Diunduh', `Data pemesanan ${project.id} berhasil diunduh sebagai PDF.`, 'success');
+                                  })
+                                  .catch((err: unknown) => {
+                                    showToast(
+                                      'Gagal Mengunduh PDF',
+                                      err instanceof Error ? err.message : 'Terjadi kendala saat membuat PDF.',
+                                      'error'
+                                    );
+                                  });
                               }}
-                              className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+                              className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 shadow-[0_1px_2px_rgba(79,70,229,0.28)] dark:shadow-none text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
                             >
                               <Download className="w-3.5 h-3.5" />
                               <span>Data Pesanan (.pdf)</span>
@@ -416,7 +424,7 @@ export function ClientPortalPage() {
                             <button
                               type="button"
                               onClick={() => setDocModal({ project, kind: 'order_pdf' })}
-                              className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-500 inline-flex items-center gap-1.5 cursor-pointer"
+                              className="px-3 py-2 rounded-lg border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 inline-flex items-center gap-1.5 cursor-pointer transition-colors"
                             >
                               <FileText className="w-3.5 h-3.5" />
                               <span>Brief / Rincian</span>
@@ -424,21 +432,21 @@ export function ClientPortalPage() {
                             <button
                               type="button"
                               onClick={() => setDocModal({ project, kind: 'contract' })}
-                              className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-500 cursor-pointer"
+                              className="px-3 py-2 rounded-lg border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                             >
                               Kontrak SPK
                             </button>
                             <button
                               type="button"
                               onClick={() => setDocModal({ project, kind: 'invoice_dp' })}
-                              className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-500 cursor-pointer"
+                              className="px-3 py-2 rounded-lg border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                             >
                               Invoice DP
                             </button>
                             <button
                               type="button"
                               onClick={() => setDocModal({ project, kind: 'invoice_final' })}
-                              className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-500 cursor-pointer"
+                              className="px-3 py-2 rounded-lg border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                             >
                               Invoice Pelunasan
                             </button>
@@ -446,7 +454,7 @@ export function ClientPortalPage() {
                               <button
                                 type="button"
                                 onClick={() => setDocModal({ project, kind: 'receipt_dp' })}
-                                className="px-3 py-2 rounded-lg border border-emerald-500/70 text-emerald-700 dark:text-emerald-400 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-950/30 cursor-pointer"
+                                className="px-3 py-2 rounded-lg border border-emerald-500/80 bg-emerald-50/40 dark:bg-transparent text-emerald-700 dark:text-emerald-400 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-950/30 cursor-pointer transition-colors"
                               >
                                 Kuitansi DP
                               </button>
@@ -455,7 +463,7 @@ export function ClientPortalPage() {
                               <button
                                 type="button"
                                 onClick={() => setDocModal({ project, kind: 'receipt_final' })}
-                                className="px-3 py-2 rounded-lg border border-emerald-600 bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold cursor-pointer"
+                                className="px-3 py-2 rounded-lg border border-emerald-600 bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold cursor-pointer transition-colors"
                               >
                                 Kuitansi Lunas
                               </button>
@@ -677,13 +685,13 @@ export function ClientPortalPage() {
                                 }
                               }}
                               placeholder="Tulis catatan revisi, penanda menit, atau pertanyaan untuk Admin..."
-                              className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 text-xs"
+                              className="flex-1 rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-xs text-slate-900 dark:text-slate-100 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] dark:shadow-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                             />
                             <button
                               type="button"
                               disabled={noteLoadingId === project.id}
                               onClick={() => void handleSendNote(project.id)}
-                              className="px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold inline-flex items-center gap-1.5 shrink-0 cursor-pointer"
+                              className="px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold inline-flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors"
                             >
                               <Send className="w-3.5 h-3.5" />
                               <span>Kirim</span>
@@ -722,7 +730,7 @@ export function ClientPortalPage() {
 
           {/* TAB 2: AJUKAN PESANAN BARU (ISOLATED VIEW) */}
           {activeTab === 'order' && (
-            <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-6 sm:p-8">
+            <section className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/50 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-6 sm:p-8">
               <OrderWorkspace
                 embedded
                 onSubmitted={() => {
@@ -735,13 +743,13 @@ export function ClientPortalPage() {
 
           {/* TAB 3: NOTIFIKASI STUDIO */}
           {activeTab === 'notifications' && (
-            <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <section className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-6 sm:p-8 space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800 pb-4">
                 <div>
-                  <h2 className="text-lg font-display font-bold text-slate-900 dark:text-slate-100">
+                  <h2 className="text-lg font-display font-bold text-slate-950 dark:text-slate-100">
                     Notifikasi Real-Time dari Studio ({clientUnreadCount} belum dibaca)
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                     Verifikasi pembayaran, perubahan tahap produksi, balasan studio, dan Master File muncul otomatis.
                   </p>
                 </div>
@@ -753,7 +761,7 @@ export function ClientPortalPage() {
                         showToast('Gagal', err instanceof Error ? err.message : 'Gagal memperbarui notifikasi.', 'error')
                       )
                     }
-                    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
                   >
                     <CheckCheck className="w-3.5 h-3.5" />
                     <span>Tandai Semua Dibaca</span>
@@ -762,7 +770,7 @@ export function ClientPortalPage() {
               </div>
 
               {clientNotifications.length === 0 ? (
-                <p className="text-sm text-slate-500 py-10 text-center">
+                <p className="text-sm text-slate-600 dark:text-slate-400 py-10 text-center">
                   Belum ada notifikasi aktivitas studio untuk akun Anda.
                 </p>
               ) : (
@@ -778,11 +786,11 @@ export function ClientPortalPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           {!n.read && (
-                            <span className="font-mono text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                            <span className="font-mono text-[10px] font-bold text-indigo-700 dark:text-indigo-400">
                               BARU
                             </span>
                           )}
-                          <strong className="text-slate-900 dark:text-slate-100">{n.title}</strong>
+                          <strong className="text-slate-950 dark:text-slate-100">{n.title}</strong>
                         </div>
                         <p className="text-slate-600 dark:text-slate-400">{n.message}</p>
                       </div>
@@ -798,61 +806,61 @@ export function ClientPortalPage() {
 
           {/* TAB 4: PENGATURAN AKUN (ISOLATED VIEW) */}
           {activeTab === 'settings' && (
-            <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-8">
-              <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
-                <h2 className="text-lg font-display font-bold text-slate-900 dark:text-slate-100">
+            <section className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_28px_-14px_rgba(15,23,42,0.09)] dark:shadow-none p-6 sm:p-8 space-y-8">
+              <div className="border-b border-slate-200/80 dark:border-slate-800 pb-4">
+                <h2 className="text-lg font-display font-bold text-slate-950 dark:text-slate-100">
                   Pengaturan Profil & Keamanan Akun
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                   Perubahan profil dan nomor WhatsApp langsung disinkronkan ke proyek dan Admin Studio.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <form onSubmit={handleSaveProfile} className="space-y-4">
-                  <h3 className="text-sm font-display font-bold text-slate-900 dark:text-slate-100">
+                  <h3 className="text-sm font-display font-bold text-slate-950 dark:text-slate-100">
                     Profil & Kontak Aktif
                   </h3>
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5">Email Terdaftar</label>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email Terdaftar</label>
                     <input
                       disabled
                       value={clientUser.email}
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/60 px-4 py-2.5 text-sm text-slate-500"
+                      className="w-full rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-100/90 dark:bg-slate-950/60 px-4 py-2.5 text-sm text-slate-600 dark:text-slate-400"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5">Nama Lengkap / Sanggar</label>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap / Sanggar</label>
                     <input
                       required
                       value={profileName}
                       onChange={(e) => setProfileName(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 text-sm"
+                      className="w-full rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] dark:shadow-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5">Nomor WhatsApp</label>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nomor WhatsApp</label>
                     <input
                       required
                       value={profileWa}
                       onChange={(e) => setProfileWa(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 text-sm"
+                      className="w-full rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] dark:shadow-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={profileSaving}
-                    className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold cursor-pointer"
+                    className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-[0_6px_14px_-4px_rgba(79,70,229,0.4)] dark:shadow-none text-white text-xs font-semibold cursor-pointer transition-all"
                   >
                     {profileSaving ? 'Menyimpan...' : 'Simpan Profil'}
                   </button>
                 </form>
 
                 <div className="space-y-4">
-                  <h3 className="text-sm font-display font-bold text-slate-900 dark:text-slate-100">
+                  <h3 className="text-sm font-display font-bold text-slate-950 dark:text-slate-100">
                     Keamanan Akun & Sinkronisasi Firebase
                   </h3>
-                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-5 space-y-3 text-xs text-slate-600 dark:text-slate-400">
+                  <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-950 p-5 space-y-3 text-xs text-slate-600 dark:text-slate-400">
                     <div className="flex items-center gap-2 font-semibold text-emerald-700 dark:text-emerald-400">
                       <ShieldCheck className="w-4 h-4" />
                       <span>Terhubung dengan Autentikasi Google</span>
@@ -873,79 +881,79 @@ export function ClientPortalPage() {
 
       {/* PAYMENT CONFIRMATION MODAL */}
       {payModalProject && (
-        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 dark:bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
           <form
             onSubmit={handleSubmitPaymentConfirm}
-            className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-2xl"
+            className="w-full max-w-md rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-[0_24px_48px_-16px_rgba(15,23,42,0.24)] dark:shadow-2xl"
           >
-            <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h3 className="text-base font-display font-bold text-slate-900 dark:text-slate-100">
+            <div className="border-b border-slate-200/80 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-display font-bold text-slate-950 dark:text-slate-100">
                 {payModalProject.stage === 'DP_50'
                   ? 'Konfirmasi Pembayaran DP 50%'
                   : 'Konfirmasi Pelunasan 50%'}
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">{payModalProject.project.judul}</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{payModalProject.project.judul}</p>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold mb-1">Nama Pengirim Rekening *</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Pengirim Rekening *</label>
                 <input
                   required
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm"
+                  className="w-full rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] dark:shadow-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Bank / E-Wallet *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Bank / E-Wallet *</label>
                   <input
                     required
                     value={bankMethod}
                     onChange={(e) => setBankMethod(e.target.value)}
                     placeholder="BCA / Mandiri / QRIS"
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm"
+                    className="w-full rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] dark:shadow-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Tanggal Transfer *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal Transfer *</label>
                   <input
                     type="date"
                     required
                     value={transferDate}
                     onChange={(e) => setTransferDate(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm font-mono"
+                    className="w-full rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-mono shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] dark:shadow-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Nominal Ditransfer (Rp) *</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nominal Ditransfer (Rp) *</label>
                 <input
                   type="number"
                   required
                   value={payAmount}
                   onChange={(e) => setPayAmount(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm font-mono"
+                  className="w-full rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-mono shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] dark:shadow-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Tautan Bukti Transfer (Google Drive — Opsional)</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tautan Bukti Transfer (Google Drive — Opsional)</label>
                 <input
                   type="url"
                   value={proofUrl}
                   onChange={(e) => setProofUrl(e.target.value)}
                   placeholder="https://drive.google.com/..."
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm"
+                  className="w-full rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] dark:shadow-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Catatan Tambahan (Opsional)</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan Tambahan (Opsional)</label>
                 <input
                   value={referenceNote}
                   onChange={(e) => setReferenceNote(e.target.value)}
                   placeholder="Contoh: Berita transfer DP Tari Mahakam"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm"
+                  className="w-full rounded-xl border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] dark:shadow-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                 />
               </div>
             </div>

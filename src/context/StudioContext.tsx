@@ -956,24 +956,63 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
   );
 
   // ================= AUTH ACTIONS =================
-  const loginClientWithGoogle = async () => {
-    const result = await signInWithPopup(auth, googleProvider);
-    if (!result.user.emailVerified) {
-      throw new Error('Email akun Google Anda belum terverifikasi.');
+  const formatFirebaseAuthError = (err: unknown, role: 'admin' | 'client'): string => {
+    const code =
+      typeof err === 'object' && err !== null && 'code' in err
+        ? String((err as { code?: unknown }).code || '')
+        : '';
+    const rawMsg = err instanceof Error ? err.message : String(err || '');
+
+    if (code === 'auth/unauthorized-domain' || rawMsg.includes('auth/unauthorized-domain')) {
+      const host = typeof window !== 'undefined' ? window.location.hostname : 'domain ini';
+      return `Domain "${host}" belum diizinkan pada pengaturan Authentication Firebase. Tambahkan "${host}" ke Authorized Domains di Firebase Console agar proses masuk dapat digunakan.`;
     }
-    const profile = await ensureClientUserProfile(result.user);
-    setClientUser(profile);
-    showToast('Berhasil Masuk', `Selamat datang di Ruang Klien, ${profile.name}.`);
+    if (code === 'auth/popup-blocked' || rawMsg.includes('auth/popup-blocked')) {
+      return 'Jendela masuk diblokir oleh browser. Izinkan pop-up untuk situs ini lalu coba lagi.';
+    }
+    if (code === 'auth/popup-closed-by-user' || rawMsg.includes('auth/popup-closed-by-user')) {
+      return 'Jendela masuk ditutup sebelum proses selesai.';
+    }
+    if (code === 'auth/cancelled-popup-request' || rawMsg.includes('auth/cancelled-popup-request')) {
+      return 'Permintaan masuk dibatalkan. Silakan coba lagi.';
+    }
+    if (code === 'auth/network-request-failed' || rawMsg.includes('auth/network-request-failed')) {
+      return 'Koneksi internet bermasalah saat menghubungi server autentikasi. Coba lagi.';
+    }
+    if (role === 'admin') {
+      return err instanceof Error && !rawMsg.startsWith('Firebase:') ? err.message : 'Gagal masuk ke Panel Admin.';
+    }
+    return err instanceof Error ? err.message : 'Gagal masuk ke Ruang Klien.';
+  };
+
+  const loginClientWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      if (!result.user.emailVerified) {
+        throw new Error('Email akun Google Anda belum terverifikasi.');
+      }
+      const profile = await ensureClientUserProfile(result.user);
+      setClientUser(profile);
+      showToast('Berhasil Masuk', `Selamat datang di Ruang Klien, ${profile.name}.`);
+    } catch (err: unknown) {
+      throw new Error(formatFirebaseAuthError(err, 'client'));
+    }
   };
 
   const logoutClient = async () => {
     await signOut(auth);
-    showToast('Keluar Akun', 'Sesi Google Anda telah diakhiri.', 'info');
+    showToast('Keluar Akun', 'Sesi akun Anda telah diakhiri.', 'info');
   };
 
   const loginAdminWithGoogle = async () => {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
+    let user: User;
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      user = result.user;
+    } catch (err: unknown) {
+      throw new Error(formatFirebaseAuthError(err, 'admin'));
+    }
+
     const emailLower = (user.email || '').toLowerCase();
 
     let hasAdminDoc = false;
@@ -988,9 +1027,7 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
 
     const adminOk = Boolean(user.emailVerified && (emailLower === ADMIN_EMAIL || hasAdminDoc));
     if (!adminOk) {
-      throw new Error(
-        `Akun Google (${user.email || '-'}) tidak terdaftar sebagai Admin Studio (${ADMIN_EMAIL}).`
-      );
+      throw new Error('Akses Admin ditolak.');
     }
 
     setIsAdminVerified(true);
@@ -1000,7 +1037,7 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
       name: user.displayName || 'Admin PrangArt Lab',
     });
     await seedStudioConfigIfMissing();
-    showToast('Akses Admin Dibuka', `Terhubung real-time ke Firestore sebagai ${emailLower}.`);
+    showToast('Akses Admin Dibuka', 'Panel Admin berhasil terhubung secara real-time.');
   };
 
   const logoutAdmin = async () => {
