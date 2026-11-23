@@ -1,0 +1,6 @@
+{
+  "name": "PrangArt Lab — Music Production Studio",
+  "description": "Platform produksi musik tari, aransemen musik non-tari, transkripsi notasi, ruang klien terintegrasi, dan dashboard studio real-time.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
