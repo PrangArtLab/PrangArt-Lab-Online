@@ -1,14 +1,33 @@
-import { Music2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useStudio } from '../context/StudioContext';
 import { safeExternalUrl } from '../lib/format';
 
 type PortfolioFilter = 'Semua' | 'Musik Tari' | 'Musik Non-Tari' | 'Transkripsi';
 
+const FILTER_KEY = 'pal_portfolio_filter';
+
 export function PortfolioPage() {
-  const { siteContent, adminToken } = useStudio();
-  const [filter, setFilter] = useState<PortfolioFilter>('Semua');
+  const { siteContent } = useStudio();
+  const [filter, setFilter] = useState<PortfolioFilter>(() => {
+    try {
+      const saved = localStorage.getItem(FILTER_KEY) as PortfolioFilter | null;
+      if (saved && ['Semua', 'Musik Tari', 'Musik Non-Tari', 'Transkripsi'].includes(saved)) {
+        return saved;
+      }
+    } catch {
+      // ignore
+    }
+    return 'Semua';
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(FILTER_KEY, filter);
+    } catch {
+      // ignore
+    }
+  }, [filter]);
 
   const items = siteContent?.portfolio || [];
   const filtered =
@@ -27,7 +46,7 @@ export function PortfolioPage() {
             Karya produksi dan partitur terpilih.
           </h1>
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Daftar karya diperbarui secara langsung oleh studio. Filter berdasarkan lini layanan di sebelah kanan.
+            Arsip karya diperbarui langsung oleh studio tanpa media gambar agar fokus pada karakter musikal dan keterangan produksi.
           </p>
         </div>
 
@@ -51,11 +70,17 @@ export function PortfolioPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-12 text-center space-y-3">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Belum ada karya portofolio pada kategori &ldquo;{filter}&rdquo;.
+        <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-12 text-center space-y-3">
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            {items.length === 0
+              ? 'Daftar portofolio publik belum dipublikasikan. Studio sedang mengkurasi karya pilihan terbaru.'
+              : `Belum ada karya portofolio pada kategori "${filter}".`}
           </p>
-          {filter !== 'Semua' && (
+          {items.length === 0 ? (
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Anda tetap dapat mengajukan proyek atau berkonsultasi langsung melalui formulir pemesanan.
+            </p>
+          ) : filter !== 'Semua' ? (
             <button
               type="button"
               onClick={() => setFilter('Semua')}
@@ -63,54 +88,36 @@ export function PortfolioPage() {
             >
               Tampilkan semua kategori
             </button>
-          )}
+          ) : null}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((item) => {
-            const imgUrl = safeExternalUrl(item.image);
             const demoUrl = safeExternalUrl(item.audioDemoUrl);
             return (
               <article
                 key={item.id}
-                className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden flex flex-col justify-between"
+                className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 flex flex-col justify-between gap-6"
               >
-                <div>
-                  <div className="aspect-[4/3] bg-slate-100 dark:bg-slate-800 overflow-hidden flex items-center justify-center">
-                    {imgUrl ? (
-                      <img
-                        src={imgUrl}
-                        alt={item.title}
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-slate-400 p-6">
-                        <Music2 className="w-8 h-8" />
-                        <span className="text-xs">{item.category}</span>
-                      </div>
-                    )}
+                <div className="space-y-3">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                      {item.category}
+                    </span>
+                    <span className="font-mono tabular-nums">{item.duration}</span>
                   </div>
-                  <div className="p-6 space-y-2.5">
-                    <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-1.5">
-                      <span className="font-semibold text-indigo-600 dark:text-indigo-400">
-                        {item.category}
-                      </span>
-                      <span aria-hidden="true">·</span>
-                      <span>{item.culture}</span>
-                      <span aria-hidden="true">·</span>
-                      <span className="font-mono tabular-nums">{item.duration}</span>
-                    </div>
-                    <h2 className="text-lg font-display font-bold text-slate-900 dark:text-slate-100">
-                      {item.title}
-                    </h2>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                      {item.description}
-                    </p>
-                  </div>
+                  <h2 className="text-lg font-display font-bold text-slate-900 dark:text-slate-100">
+                    {item.title}
+                  </h2>
+                  <p className="text-xs font-mono text-slate-500 dark:text-slate-400">
+                    {item.culture}
+                  </p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
 
-                <div className="px-6 pb-6 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                   <span className="font-mono text-slate-500 tabular-nums">Tahun {item.year}</span>
                   {demoUrl ? (
                     <a
@@ -121,14 +128,14 @@ export function PortfolioPage() {
                     >
                       Dengar Pratinjau
                     </a>
-                  ) : !adminToken ? (
+                  ) : (
                     <Link
                       to="/pemesanan"
                       className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
                     >
                       Pesan Karya Serupa
                     </Link>
-                  ) : null}
+                  )}
                 </div>
               </article>
             );

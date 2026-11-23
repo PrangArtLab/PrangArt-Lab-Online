@@ -1,5 +1,10 @@
 {
-  "adminCredential": null,
+  "adminAccount": {
+    "email": "prangart.lab@gmail.com",
+    "name": "Admin PrangArt Lab",
+    "passwordSalt": "ab682778e36244c5ae19340cfa6f0a5b",
+    "passwordHash": "c70c28919da899d93bfc80728963ac0eeeeec4a003322dabbb94261547a292278f2d66d92163f07036353583b58fbe54cc18312781124128ab1606c613cba56d"
+  },
   "users": [
     {
       "id": "usr-demo-siti",
@@ -327,7 +332,6 @@
         "culture": "Kutai & Dayak Kenyah · Kalimantan Timur",
         "duration": "06:40",
         "year": "2026",
-        "image": "/src/assets/images/portfolio_tari_kreasi_1795405927200.jpg",
         "description": "Komposisi iringan tari multi-adegan yang memadukan petikan sape, gambus Kutai, perkusi tradisi, dan tekstur orkestra modern untuk panggung festival nasional."
       },
       {
@@ -337,7 +341,6 @@
         "culture": "Cinematic Acoustic Scoring",
         "duration": "04:55",
         "year": "2026",
-        "image": "/src/assets/images/portfolio_scoring_studio_1795405927608.jpg",
         "description": "Scoring film dokumenter dengan sinkronisasi timecode ketat, memadukan kuartet gesek, piano felt hangat, serta suling bambu akustik."
       },
       {
@@ -347,7 +350,6 @@
         "culture": "Etnomusikologi · Full Score & Parts",
         "duration": "05:15",
         "year": "2025",
-        "image": "/src/assets/images/portfolio_transkripsi_partitur_1795405927992.jpg",
         "description": "Transkripsi deskriptif dan preskriptif untuk kebutuhan dokumentasi akademik dan repertoar ansambel lengkap dengan not balok dan simulasi MIDI."
       }
     ],

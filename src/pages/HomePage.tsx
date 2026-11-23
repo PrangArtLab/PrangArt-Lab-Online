@@ -1,11 +1,11 @@
-import { ArrowRight, Music2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStudio } from '../context/StudioContext';
 import { formatRupiah, safeExternalUrl } from '../lib/format';
 import type { ServiceLineKey } from '../types';
 
 export function HomePage() {
-  const { catalog, siteContent, openWaModal, setOrderPreset, adminToken } = useStudio();
+  const { catalog, siteContent, openWaModal, setOrderPreset } = useStudio();
   const navigate = useNavigate();
 
   const handleSelectService = (svcKey: ServiceLineKey) => {
@@ -46,12 +46,30 @@ export function HomePage() {
     },
   ];
 
+  const productionStandards = [
+    {
+      step: '01',
+      title: 'Pengajuan & Kontrak SPK Digital',
+      detail: 'Rincian brief, tempo, durasi, dan perjanjian kerja sama tercatat otomatis sejak awal.',
+    },
+    {
+      step: '02',
+      title: 'Pelacakan Progres 7 Tahap',
+      detail: 'Setiap perpindahan milestone produksi, pengiriman draf, dan catatan revisi tersinkron real-time.',
+    },
+    {
+      step: '03',
+      title: 'Verifikasi DP 50% & Master File',
+      detail: 'Bukti Lunas / Kuitansi resmi dan tautan unduhan Master WAV 24-bit terbuka otomatis setelah verifikasi.',
+    },
+  ];
+
   return (
     <div className="bg-slate-50 dark:bg-slate-950">
-      {/* 1. PROPOSITION (HERO) */}
+      {/* 1. PROPOSITION (HERO — Pure Editorial Typography, Zero Images) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16 lg:pt-14 lg:pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
-          <div className="lg:col-span-6 flex flex-col justify-center space-y-6">
+          <div className="lg:col-span-7 flex flex-col justify-center space-y-6">
             <p className="text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400 tracking-wide">
               PrangArt Lab · Music Production Studio · Kalimantan Timur
             </p>
@@ -63,41 +81,62 @@ export function HomePage() {
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              {!adminToken ? (
-                <Link
-                  to="/pemesanan"
-                  className="px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors inline-flex items-center gap-2 whitespace-nowrap"
-                >
-                  <span>Mulai Pemesanan</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              ) : (
-                <Link
-                  to="/admin"
-                  className="px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors inline-flex items-center gap-2 whitespace-nowrap"
-                >
-                  <span>Buka Panel Admin</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              )}
+              <Link
+                to="/pemesanan"
+                className="px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors inline-flex items-center gap-2 whitespace-nowrap"
+              >
+                <span>Mulai Pemesanan</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                to="/klien"
+                className="px-6 py-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 hover:border-indigo-500 text-sm font-semibold transition-colors whitespace-nowrap"
+              >
+                Buka Ruang Klien
+              </Link>
               <button
                 type="button"
                 onClick={() => openWaModal('Konsultasi Konsep Musik')}
-                className="px-6 py-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 hover:border-indigo-500 text-sm font-semibold transition-colors whitespace-nowrap cursor-pointer"
+                className="px-5 py-3.5 rounded-xl text-indigo-600 dark:text-indigo-400 hover:underline text-sm font-semibold transition-colors whitespace-nowrap cursor-pointer"
               >
                 Konsultasi WhatsApp
               </button>
             </div>
           </div>
 
-          <div className="lg:col-span-6 flex">
-            <div className="w-full rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-200 dark:bg-slate-900 relative min-h-[280px]">
-              <img
-                src="/src/assets/images/studio_hero_production_1795405927298.jpg"
-                alt="Ruang produksi akustik PrangArt Lab dengan konsol mixing dan instrumen tradisional"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
-              />
+          <div className="lg:col-span-5 flex">
+            <div className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 sm:p-8 flex flex-col justify-between gap-6">
+              <div className="space-y-2 border-b border-slate-100 dark:border-slate-800 pb-4">
+                <p className="text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400">
+                  Alur Kerja Studio
+                </p>
+                <h2 className="text-lg font-display font-bold text-slate-900 dark:text-slate-100">
+                  Standar Produksi Terdokumentasi
+                </h2>
+              </div>
+
+              <div className="space-y-5">
+                {productionStandards.map((item) => (
+                  <div key={item.step} className="flex items-start gap-4">
+                    <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 pt-0.5 tabular-nums">
+                      {item.step}
+                    </span>
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        {item.detail}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 font-mono tabular-nums">
+                <span>Output: WAV 24-bit / PDF Partitur</span>
+                <span>DP 50% · Lunas 50%</span>
+              </div>
             </div>
           </div>
         </div>
@@ -136,23 +175,21 @@ export function HomePage() {
                   </p>
                 </div>
 
-                {!adminToken && (
-                  <button
-                    type="button"
-                    onClick={() => handleSelectService(svc.key)}
-                    className="self-start text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <span>Pilih & Hitung Estimasi</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => handleSelectService(svc.key)}
+                  className="self-start text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Pilih & Hitung Estimasi</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 3. PROOF / PORTFOLIO & TESTIMONIALS */}
+      {/* 3. PROOF / PORTFOLIO & TESTIMONIALS (Pure Typography, Zero Images) */}
       <section className="border-t border-slate-200 dark:border-slate-800 py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -174,50 +211,53 @@ export function HomePage() {
           </div>
 
           {portfolioPreview.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-10 text-center text-sm text-slate-500">
-              Portofolio belum tersedia. Admin dapat menambahkannya dari Panel Admin.
+            <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-10 text-center space-y-2">
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Arsip portofolio publik sedang dikurasi dan diperbarui langsung oleh tim studio.
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Silakan hubungi studio via WhatsApp untuk mendengar contoh sampel karya yang relevan dengan kebutuhan produksi Anda.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {portfolioPreview.map((item) => {
-                const imgUrl = safeExternalUrl(item.image);
+                const demoUrl = safeExternalUrl(item.audioDemoUrl);
                 return (
                   <article
                     key={item.id}
-                    className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden flex flex-col"
+                    className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 flex flex-col justify-between gap-5"
                   >
-                    <div className="aspect-[4/3] bg-slate-100 dark:bg-slate-800 overflow-hidden flex items-center justify-center">
-                      {imgUrl ? (
-                        <img
-                          src={imgUrl}
-                          alt={item.title}
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex flex-col items-center gap-2 text-slate-400 p-6 text-center">
-                          <Music2 className="w-8 h-8" />
-                          <span className="text-xs">{item.category}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-6 space-y-2.5 flex-1">
-                      <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-1.5">
+                    <div className="space-y-3">
+                      <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
                         <span className="font-semibold text-indigo-600 dark:text-indigo-400">
                           {item.category}
                         </span>
-                        <span aria-hidden="true">·</span>
-                        <span className="font-mono tabular-nums">{item.duration}</span>
-                        <span aria-hidden="true">·</span>
-                        <span className="font-mono tabular-nums">{item.year}</span>
+                        <span className="font-mono tabular-nums">
+                          {item.duration} · {item.year}
+                        </span>
                       </div>
                       <h3 className="text-base font-display font-bold text-slate-900 dark:text-slate-100">
                         {item.title}
                       </h3>
+                      <p className="text-xs font-mono text-slate-500 dark:text-slate-400">
+                        {item.culture}
+                      </p>
                       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                         {item.description}
                       </p>
                     </div>
+
+                    {demoUrl && (
+                      <a
+                        href={demoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline self-start"
+                      >
+                        Dengar Pratinjau Audio
+                      </a>
+                    )}
                   </article>
                 );
               })}
@@ -275,14 +315,12 @@ export function HomePage() {
             </h2>
           </div>
           <div className="flex flex-wrap gap-3 shrink-0">
-            {!adminToken && (
-              <Link
-                to="/pemesanan"
-                className="px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-colors whitespace-nowrap"
-              >
-                Isi Formulir Pesanan
-              </Link>
-            )}
+            <Link
+              to="/pemesanan"
+              className="px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-colors whitespace-nowrap"
+            >
+              Isi Formulir Pesanan
+            </Link>
             <button
               type="button"
               onClick={() => openWaModal('Diskusi Proyek Baru')}

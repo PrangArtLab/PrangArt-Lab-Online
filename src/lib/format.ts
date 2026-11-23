@@ -65,17 +65,30 @@ export function normalizeWhatsAppNumber(raw?: string): string {
   return n;
 }
 
+export function formatDateShortID(iso?: string): string {
+  if (!iso) return '-';
+  try {
+    const d = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? new Date(`${iso}T00:00:00`) : new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return iso;
+  }
+}
+
 export function getProjectPaymentAccess(project: Project) {
   const dpLower = String(project.dpStatus || '').toLowerCase();
   const finalLower = String(project.finalPaymentStatus || '').toLowerCase();
-  const prodLower = String(project.productionStatus || '').toLowerCase();
 
   const isFullyPaid =
     project.paymentStage === 'LUNAS' ||
     finalLower === 'lunas' ||
     dpLower.includes('lunas 100%') ||
-    dpLower === 'lunas' ||
-    prodLower.includes('7. pelunasan & penyerahan master');
+    dpLower === 'lunas';
 
   const isDpVerified =
     !isFullyPaid &&
@@ -95,8 +108,30 @@ export function getProjectPaymentAccess(project: Project) {
     isDpVerified,
     isFinalSubmittedByClient,
     isFullyPaid,
+    canDownloadDpReceipt: isDpVerified || isFinalSubmittedByClient || isFullyPaid,
     canDownloadLunasDocument: isFullyPaid && Boolean(project.canDownloadReceipt ?? true),
     canDownloadMasterFile: isFullyPaid && Boolean(project.canDownloadMaster ?? true),
+  };
+}
+
+export function getProjectFinanceSummary(project: Project) {
+  const access = getProjectPaymentAccess(project);
+  const totalPrice = Number(project.totalPrice || 0);
+  const dpAmount = Number(project.dpAmount || 0);
+  const verifiedPaidAmount = access.isFullyPaid
+    ? totalPrice
+    : access.isDpVerified || access.isFinalSubmittedByClient
+    ? dpAmount
+    : 0;
+  const outstandingAmount = Math.max(0, totalPrice - verifiedPaidAmount);
+
+  return {
+    ...access,
+    totalPrice,
+    dpAmount,
+    remainingAmount: Number(project.remainingAmount || Math.max(0, totalPrice - dpAmount)),
+    verifiedPaidAmount,
+    outstandingAmount,
   };
 }
 

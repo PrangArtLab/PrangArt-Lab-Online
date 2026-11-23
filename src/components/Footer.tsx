@@ -30,6 +30,9 @@ export function Footer() {
           <Link to="/klien" className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
             Ruang Klien
           </Link>
+          <Link to="/admin" className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+            Panel Admin
+          </Link>
           <button
             type="button"
             onClick={() => openWaModal('Konsultasi Proyek')}

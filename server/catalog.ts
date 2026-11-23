@@ -242,73 +242,14 @@ export const DEFAULT_SERVICE_CATALOG: ServiceCatalog = {
 };
 
 export const DEFAULT_SITE_CONTENT: SiteContent = {
-  portfolio: [
-    {
-      id: 'pf-1',
-      title: 'Gema Mahakam — Garapan Tari Kontemporer',
-      category: 'Musik Tari',
-      culture: 'Kutai & Dayak Kenyah · Kalimantan Timur',
-      duration: '06:40',
-      year: '2026',
-      image: '/src/assets/images/portfolio_tari_kreasi_1795405927200.jpg',
-      description:
-        'Komposisi iringan tari multi-adegan yang memadukan petikan sape, gambus Kutai, perkusi tradisi, dan tekstur orkestra modern untuk panggung festival nasional.',
-    },
-    {
-      id: 'pf-2',
-      title: 'Skor Dokumenter "Senja di Tepian Sungai"',
-      category: 'Musik Non-Tari',
-      culture: 'Cinematic Acoustic Scoring',
-      duration: '04:55',
-      year: '2026',
-      image: '/src/assets/images/portfolio_scoring_studio_1795405927608.jpg',
-      description:
-        'Scoring film dokumenter dengan sinkronisasi timecode ketat, memadukan kuartet gesek, piano felt hangat, serta suling bambu akustik.',
-    },
-    {
-      id: 'pf-3',
-      title: 'Partitur Lengkap Repertoar Tingkilan Klasik',
-      category: 'Transkripsi',
-      culture: 'Etnomusikologi · Full Score & Parts',
-      duration: '05:15',
-      year: '2025',
-      image: '/src/assets/images/portfolio_transkripsi_partitur_1795405927992.jpg',
-      description:
-        'Transkripsi deskriptif dan preskriptif untuk kebutuhan dokumentasi akademik dan repertoar ansambel lengkap dengan not balok dan simulasi MIDI.',
-    },
-  ],
-  testimonials: [
-    {
-      id: 'tm-1',
-      name: 'Siti Aminah',
-      role: 'Koreografer · Sanggar Seni Pesona Mahakam',
-      quote:
-        'Transisi tempo dari adegan pembuka ke klimaks sangat presisi mengikuti video latihan kami. Penari langsung menyatu sejak latihan perdana tanpa perlu potong-ulang audio.',
-      outcome: '100% sinkron dengan video latihan · Paket Pro Musik Tari',
-    },
-    {
-      id: 'tm-2',
-      name: 'Raka Mahendra',
-      role: 'Sutradara · Rumah Produksi Lensa Borneo',
-      quote:
-        'Brief dan revisi berjalan rapi melalui Ruang Klien. Setiap progres tercatat jelas sampai penyerahan master WAV dan stems terpisah untuk kebutuhan mixing film kami.',
-      outcome: 'Selesai tepat jadwal tayang · Paket Pro Scoring Non-Tari',
-    },
-    {
-      id: 'tm-3',
-      name: 'Dian Kusumawardhani',
-      role: 'Peneliti Seni Pertunjukan · Fakultas Seni',
-      quote:
-        'Partitur not balok dan analisis ornamentasi tradisi dikerjakan sangat detail dan rapi siap cetak untuk lampiran riset tesis kami.',
-      outcome: 'Partitur Full Score + MIDI akurat · Paket Komplet Transkripsi',
-    },
-  ],
+  portfolio: [],
+  testimonials: [],
   settings: {
-    studioWhatsApp: '6281234567890',
+    studioWhatsApp: '',
     studioEmail: 'prangart.lab@gmail.com',
     studioAddress: 'Samarinda, Kalimantan Timur, Indonesia',
-    studioBankName: 'Bank BCA / Mandiri (Sesuaikan di Pengaturan Admin)',
-    studioBankAccount: '1234-5678-9012',
+    studioBankName: '',
+    studioBankAccount: '',
     studioBankHolder: 'PrangArt Lab Studio',
   },
 };

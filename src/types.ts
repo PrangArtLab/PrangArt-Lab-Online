@@ -35,6 +35,7 @@ export interface ProjectSpecItem {
 
 export interface PaymentConfirmation {
   id: string;
+  clientId?: string;
   stage: 'DP_50' | 'PELUNASAN_50';
   amount: number;
   senderName: string;
@@ -47,6 +48,8 @@ export interface PaymentConfirmation {
 
 export interface ProjectNote {
   id: string;
+  clientId?: string;
+  authorUid?: string;
   authorRole: 'client' | 'admin';
   authorName: string;
   message: string;
@@ -81,6 +84,8 @@ export interface Project {
   canDownloadMaster: boolean;
   masterFileUrl?: string;
   productionStatus: string;
+  finishingDate?: string;
+  finishingNotes?: string;
   specs: ProjectSpecItem[];
   videoLink?: string;
   sinopsis?: string;
@@ -92,9 +97,11 @@ export interface Project {
 
 export interface ClientUser {
   id: string;
+  uid?: string;
   name: string;
   email: string;
   wa: string;
+  role?: 'client';
   createdAt?: string;
   updatedAt?: string;
 }
@@ -114,15 +121,23 @@ export type NotificationType =
 export interface StudioNotification {
   id: string;
   recipientRole: 'admin' | 'client';
+  recipientUid?: string;
   recipientEmail?: string;
   type: NotificationType;
   title: string;
   message: string;
   projectId?: string;
+  actorUid?: string;
   actorName: string;
   actorEmail?: string;
   read: boolean;
   createdAt: string;
+}
+
+export interface AdminProfile {
+  uid?: string;
+  email: string;
+  name: string;
 }
 
 export interface PortfolioItem {
@@ -132,7 +147,6 @@ export interface PortfolioItem {
   culture: string;
   duration: string;
   year: string;
-  image?: string;
   audioDemoUrl?: string;
   description: string;
 }

@@ -1,0 +1,227 @@
+{
+  "entities": {
+    "TestConnection": {
+      "title": "TestConnection",
+      "description": "Startup Firestore connectivity probe document",
+      "type": "object",
+      "properties": {
+        "ok": { "type": "boolean" }
+      },
+      "required": ["ok"]
+    },
+    "CatalogDoc": {
+      "title": "CatalogDoc",
+      "description": "Non-PII studio service catalog configuration (tari, digital, transkripsi)",
+      "type": "object",
+      "properties": {
+        "tari": { "type": "object" },
+        "digital": { "type": "object" },
+        "transkripsi": { "type": "object" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["tari", "digital", "transkripsi"]
+    },
+    "SiteContentDoc": {
+      "title": "SiteContentDoc",
+      "description": "Non-PII public portfolio, testimonials, and studio bank/contact settings",
+      "type": "object",
+      "properties": {
+        "portfolio": { "type": "array" },
+        "testimonials": { "type": "array" },
+        "settings": { "type": "object" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["portfolio", "testimonials", "settings"]
+    },
+    "AdminRole": {
+      "title": "AdminRole",
+      "description": "Explicit admin access record keyed by Firebase Auth UID",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "createdAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Registered client profile with contact WhatsApp and role",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "wa": { "type": "string" },
+        "role": { "type": "string", "enum": ["client"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "email", "role", "createdAt", "updatedAt"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Music production order, contract consent, payment state, and specs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "clientId": { "type": "string" },
+        "clientEmail": { "type": "string", "format": "email" },
+        "clientName": { "type": "string" },
+        "contactEmail": { "type": "string", "format": "email" },
+        "clientWa": { "type": "string" },
+        "judul": { "type": "string" },
+        "durasi": { "type": "string" },
+        "serviceLine": { "type": "string", "enum": ["tari", "digital", "transkripsi"] },
+        "serviceLineLabel": { "type": "string" },
+        "packageKey": { "type": "string" },
+        "packageName": { "type": "string" },
+        "contractAgreed": { "type": "boolean" },
+        "contractAgreedAt": { "type": "string" },
+        "hasVocalAddon": { "type": "boolean" },
+        "addonAmount": { "type": "number" },
+        "sorakOption": { "type": ["string", "null"] },
+        "totalPrice": { "type": "number" },
+        "dpAmount": { "type": "number" },
+        "remainingAmount": { "type": "number" },
+        "paymentStage": {
+          "type": "string",
+          "enum": ["MENUNGGU_DP", "DP_KONFIRMASI_KLIEN", "DP_TERVERIFIKASI", "PELUNASAN_KONFIRMASI_KLIEN", "LUNAS"]
+        },
+        "dpStatus": { "type": "string" },
+        "finalPaymentStatus": { "type": "string" },
+        "canDownloadReceipt": { "type": "boolean" },
+        "canDownloadMaster": { "type": "boolean" },
+        "masterFileUrl": { "type": "string" },
+        "productionStatus": { "type": "string" },
+        "finishingDate": { "type": "string", "description": "Target or actual finishing completion date (YYYY-MM-DD)" },
+        "finishingNotes": { "type": "string", "description": "Admin studio notes regarding finishing and deliverable hasil karya" },
+        "specs": { "type": "array" },
+        "videoLink": { "type": "string" },
+        "sinopsis": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "clientId",
+        "clientEmail",
+        "clientName",
+        "contactEmail",
+        "clientWa",
+        "judul",
+        "durasi",
+        "serviceLine",
+        "serviceLineLabel",
+        "packageKey",
+        "packageName",
+        "contractAgreed",
+        "hasVocalAddon",
+        "addonAmount",
+        "totalPrice",
+        "dpAmount",
+        "remainingAmount",
+        "paymentStage",
+        "dpStatus",
+        "finalPaymentStatus",
+        "canDownloadReceipt",
+        "canDownloadMaster",
+        "productionStatus",
+        "specs",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PaymentConfirmation": {
+      "title": "PaymentConfirmation",
+      "description": "Subcollection item under a project containing transfer proof submitted by client",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string" },
+        "stage": { "type": "string", "enum": ["DP_50", "PELUNASAN_50"] },
+        "amount": { "type": "number" },
+        "senderName": { "type": "string" },
+        "bankMethod": { "type": "string" },
+        "transferDate": { "type": "string" },
+        "referenceNote": { "type": "string" },
+        "proofUrl": { "type": "string" },
+        "submittedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "stage", "amount", "senderName", "bankMethod", "transferDate", "submittedAt"]
+    },
+    "ProjectNote": {
+      "title": "ProjectNote",
+      "description": "Subcollection item under a project for discussion / revision notes between client and admin",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string" },
+        "authorUid": { "type": "string" },
+        "authorRole": { "type": "string", "enum": ["client", "admin"] },
+        "authorName": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "authorUid", "authorRole", "authorName", "message", "createdAt"]
+    },
+    "StudioNotification": {
+      "title": "StudioNotification",
+      "description": "Real-time notifications between Client and Admin",
+      "type": "object",
+      "properties": {
+        "recipientRole": { "type": "string", "enum": ["admin", "client"] },
+        "recipientUid": { "type": "string" },
+        "recipientEmail": { "type": "string" },
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "projectId": { "type": "string" },
+        "actorUid": { "type": "string" },
+        "actorName": { "type": "string" },
+        "actorEmail": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["recipientRole", "recipientUid", "type", "title", "message", "actorUid", "actorName", "read", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/test/{docId}": {
+      "schema": { "$ref": "#/entities/TestConnection" },
+      "description": "Health check connection document"
+    },
+    "/config/catalog": {
+      "schema": { "$ref": "#/entities/CatalogDoc" },
+      "description": "Public non-PII service packages and pricing catalog"
+    },
+    "/config/siteContent": {
+      "schema": { "$ref": "#/entities/SiteContentDoc" },
+      "description": "Public non-PII portfolio items, client testimonials, and studio contact/bank details"
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminRole" },
+      "description": "Authorized admin UIDs"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Client profiles with PII protected by ownership or admin role"
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "Music production project orders"
+    },
+    "/projects/{projectId}/confirmations/{confId}": {
+      "schema": { "$ref": "#/entities/PaymentConfirmation" },
+      "description": "Payment confirmations submitted by client for a project"
+    },
+    "/projects/{projectId}/notes/{noteId}": {
+      "schema": { "$ref": "#/entities/ProjectNote" },
+      "description": "Revision notes and replies between client and admin"
+    },
+    "/notifications/{notifId}": {
+      "schema": { "$ref": "#/entities/StudioNotification" },
+      "description": "Real-time notifications for admin and client dashboards"
+    }
+  }
+}

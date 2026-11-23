@@ -1,0 +1,362 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // Helper Functions
+    // =========================================================================
+
+    function isAuthenticated() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        (request.auth.token.email is string && request.auth.token.email.lower() == 'prangart.lab@gmail.com') ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.matches('^[a-zA-Z0-9_-]{3,80}$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function validStr(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    function isValidUserProfile(d) {
+      return d.keys().hasOnly(['id', 'uid', 'name', 'email', 'wa', 'role', 'createdAt', 'updatedAt'])
+        && d.keys().hasAll(['uid', 'name', 'email', 'role', 'createdAt', 'updatedAt'])
+        && validStr(d.uid, 1, 128)
+        && validStr(d.name, 1, 120)
+        && validStr(d.email, 3, 180)
+        && (!('wa' in d) || (d.wa is string && d.wa.size() <= 40))
+        && (!('id' in d) || validStr(d.id, 1, 128))
+        && d.role == 'client'
+        && d.createdAt is timestamp
+        && d.updatedAt is timestamp;
+    }
+
+    function isValidProjectShape(d) {
+      return d.keys().hasOnly([
+          'id', 'clientId', 'clientEmail', 'clientName', 'contactEmail', 'clientWa',
+          'judul', 'durasi', 'serviceLine', 'serviceLineLabel', 'packageKey', 'packageName',
+          'contractAgreed', 'contractAgreedAt', 'hasVocalAddon', 'addonAmount', 'sorakOption',
+          'totalPrice', 'dpAmount', 'remainingAmount', 'paymentStage', 'dpStatus',
+          'finalPaymentStatus', 'canDownloadReceipt', 'canDownloadMaster', 'masterFileUrl',
+          'productionStatus', 'finishingDate', 'finishingNotes', 'specs', 'videoLink',
+          'sinopsis', 'createdAt', 'updatedAt'
+        ])
+        && d.keys().hasAll([
+          'clientId', 'clientEmail', 'clientName', 'contactEmail', 'clientWa',
+          'judul', 'durasi', 'serviceLine', 'serviceLineLabel', 'packageKey', 'packageName',
+          'contractAgreed', 'hasVocalAddon', 'addonAmount', 'totalPrice', 'dpAmount',
+          'remainingAmount', 'paymentStage', 'dpStatus', 'finalPaymentStatus',
+          'canDownloadReceipt', 'canDownloadMaster', 'productionStatus', 'specs',
+          'createdAt', 'updatedAt'
+        ])
+        && validStr(d.clientId, 1, 128)
+        && validStr(d.clientEmail, 3, 180)
+        && validStr(d.clientName, 1, 160)
+        && validStr(d.contactEmail, 3, 180)
+        && validStr(d.clientWa, 1, 40)
+        && validStr(d.judul, 1, 200)
+        && validStr(d.durasi, 1, 40)
+        && d.serviceLine in ['tari', 'digital', 'transkripsi']
+        && validStr(d.serviceLineLabel, 1, 80)
+        && validStr(d.packageKey, 1, 40)
+        && validStr(d.packageName, 1, 140)
+        && d.contractAgreed is bool
+        && (!('contractAgreedAt' in d) || d.contractAgreedAt == null || validStr(d.contractAgreedAt, 0, 60))
+        && d.hasVocalAddon is bool
+        && d.addonAmount is number && d.addonAmount >= 0
+        && (!('sorakOption' in d) || d.sorakOption == null || validStr(d.sorakOption, 0, 120))
+        && d.totalPrice is number && d.totalPrice > 0
+        && d.dpAmount is number && d.dpAmount >= 0
+        && d.remainingAmount is number && d.remainingAmount >= 0
+        && d.paymentStage in ['MENUNGGU_DP', 'DP_KONFIRMASI_KLIEN', 'DP_TERVERIFIKASI', 'PELUNASAN_KONFIRMASI_KLIEN', 'LUNAS']
+        && validStr(d.dpStatus, 1, 160)
+        && validStr(d.finalPaymentStatus, 1, 160)
+        && d.canDownloadReceipt is bool
+        && d.canDownloadMaster is bool
+        && (!('masterFileUrl' in d) || d.masterFileUrl == null || validStr(d.masterFileUrl, 0, 1000))
+        && validStr(d.productionStatus, 1, 160)
+        && (!('finishingDate' in d) || d.finishingDate == null || validStr(d.finishingDate, 0, 40))
+        && (!('finishingNotes' in d) || d.finishingNotes == null || validStr(d.finishingNotes, 0, 1000))
+        && d.specs is list && d.specs.size() <= 35
+        && (!('videoLink' in d) || d.videoLink == null || validStr(d.videoLink, 0, 1000))
+        && (!('sinopsis' in d) || d.sinopsis == null || validStr(d.sinopsis, 0, 10000))
+        && d.createdAt is timestamp
+        && d.updatedAt is timestamp;
+    }
+
+    function isValidConfirmation(d) {
+      return d.keys().hasOnly([
+          'id', 'clientId', 'stage', 'amount', 'senderName', 'bankMethod',
+          'transferDate', 'referenceNote', 'proofUrl', 'submittedAt'
+        ])
+        && d.keys().hasAll(['clientId', 'stage', 'amount', 'senderName', 'bankMethod', 'transferDate', 'submittedAt'])
+        && validStr(d.clientId, 1, 128)
+        && d.stage in ['DP_50', 'PELUNASAN_50']
+        && d.amount is number && d.amount > 0
+        && validStr(d.senderName, 1, 140)
+        && validStr(d.bankMethod, 1, 80)
+        && validStr(d.transferDate, 4, 40)
+        && (!('referenceNote' in d) || validStr(d.referenceNote, 0, 500))
+        && (!('proofUrl' in d) || d.proofUrl == null || validStr(d.proofUrl, 0, 1000))
+        && d.submittedAt is timestamp;
+    }
+
+    function isValidNote(d) {
+      return d.keys().hasOnly(['id', 'clientId', 'authorUid', 'authorRole', 'authorName', 'message', 'createdAt'])
+        && d.keys().hasAll(['clientId', 'authorUid', 'authorRole', 'authorName', 'message', 'createdAt'])
+        && validStr(d.clientId, 1, 128)
+        && validStr(d.authorUid, 1, 128)
+        && d.authorRole in ['client', 'admin']
+        && validStr(d.authorName, 1, 140)
+        && validStr(d.message, 1, 3000)
+        && d.createdAt is timestamp;
+    }
+
+    function isValidNotification(d) {
+      return d.keys().hasOnly([
+          'id', 'recipientRole', 'recipientUid', 'recipientEmail', 'type',
+          'title', 'message', 'projectId', 'actorUid', 'actorName', 'actorEmail',
+          'read', 'createdAt'
+        ])
+        && d.keys().hasAll(['recipientRole', 'recipientUid', 'type', 'title', 'message', 'actorUid', 'actorName', 'read', 'createdAt'])
+        && d.recipientRole in ['admin', 'client']
+        && validStr(d.recipientUid, 1, 128)
+        && (!('recipientEmail' in d) || d.recipientEmail == null || validStr(d.recipientEmail, 0, 180))
+        && d.type in [
+          'ORDER_CREATED', 'DP_CONFIRMED', 'FINAL_CONFIRMED', 'REVISION_NOTE',
+          'CLIENT_PROFILE_UPDATED', 'CLIENT_REGISTERED', 'STATUS_UPDATED',
+          'PAYMENT_VERIFIED', 'MASTER_UPLOADED', 'ADMIN_REPLY'
+        ]
+        && validStr(d.title, 1, 200)
+        && validStr(d.message, 1, 1000)
+        && (!('projectId' in d) || d.projectId == null || validStr(d.projectId, 1, 80))
+        && validStr(d.actorUid, 1, 128)
+        && validStr(d.actorName, 1, 140)
+        && (!('actorEmail' in d) || d.actorEmail == null || validStr(d.actorEmail, 0, 180))
+        && d.read is bool
+        && d.createdAt is timestamp;
+    }
+
+    // =========================================================================
+    // Collections
+    // =========================================================================
+
+    // Startup connectivity probe (contains zero PII)
+    match /test/{docId} {
+      allow get: if docId == 'connection';
+      allow list: if false;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Public non-PII studio catalog & public showcase content
+    match /config/{docId} {
+      allow get: if docId in ['catalog', 'siteContent'];
+      allow list: if false;
+      allow create, update: if isAdmin()
+        && docId in ['catalog', 'siteContent']
+        && (
+          (docId == 'catalog' && incoming().keys().hasAll(['tari', 'digital', 'transkripsi'])) ||
+          (docId == 'siteContent' && incoming().keys().hasAll(['portfolio', 'testimonials', 'settings']))
+        );
+      allow delete: if false;
+    }
+
+    // Admin registry
+    match /admins/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Client user profiles (strictly private: owner or admin, never public, no client listing)
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming())
+        && incoming().uid == request.auth.uid
+        && request.auth.token.email is string
+        && incoming().email.lower() == request.auth.token.email.lower()
+        && incoming().role == 'client'
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if (
+          isOwner(userId)
+          && isValidUserProfile(incoming())
+          && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'wa', 'updatedAt'])
+          && incoming().uid == existing().uid
+          && incoming().email == existing().email
+          && incoming().role == existing().role
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+        ) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Projects (music orders)
+    match /projects/{projectId} {
+      allow get: if isAdmin() || (isAuthenticated() && existing().clientId == request.auth.uid);
+      allow list: if isAdmin() || (isAuthenticated() && existing().clientId == request.auth.uid);
+
+      allow create: if isValidId(projectId)
+        && isAuthenticated()
+        && isValidProjectShape(incoming())
+        && incoming().clientId == request.auth.uid
+        && request.auth.token.email is string
+        && incoming().clientEmail.lower() == request.auth.token.email.lower()
+        && incoming().paymentStage == 'MENUNGGU_DP'
+        && incoming().canDownloadReceipt == false
+        && incoming().canDownloadMaster == false
+        && !('finishingDate' in incoming())
+        && !('finishingNotes' in incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if (
+        isAuthenticated()
+        && existing().clientId == request.auth.uid
+        && isValidProjectShape(incoming())
+        && incoming().clientId == existing().clientId
+        && incoming().clientEmail == existing().clientEmail
+        && incoming().totalPrice == existing().totalPrice
+        && incoming().dpAmount == existing().dpAmount
+        && incoming().remainingAmount == existing().remainingAmount
+        && incoming().canDownloadReceipt == existing().canDownloadReceipt
+        && incoming().canDownloadMaster == existing().canDownloadMaster
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          // Profile contact sync or note timestamp touch (cannot alter paymentStage)
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly(['clientName', 'clientWa', 'updatedAt'])
+            && incoming().paymentStage == existing().paymentStage
+          ) ||
+          // Client confirms DP 50%
+          (
+            existing().paymentStage == 'MENUNGGU_DP'
+            && incoming().diff(existing()).affectedKeys().hasOnly(['paymentStage', 'dpStatus', 'updatedAt'])
+            && incoming().paymentStage == 'DP_KONFIRMASI_KLIEN'
+          ) ||
+          // Client confirms Pelunasan 50%
+          (
+            existing().paymentStage == 'DP_TERVERIFIKASI'
+            && incoming().diff(existing()).affectedKeys().hasOnly(['paymentStage', 'finalPaymentStatus', 'updatedAt'])
+            && incoming().paymentStage == 'PELUNASAN_KONFIRMASI_KLIEN'
+          )
+        )
+      ) || (
+        isAdmin()
+        && isValidProjectShape(incoming())
+        && incoming().clientId == existing().clientId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+      );
+
+      allow delete: if isAdmin();
+
+      // Payment confirmations subcollection
+      match /confirmations/{confId} {
+        allow get: if isAdmin() || (isAuthenticated() && existing().clientId == request.auth.uid);
+        allow list: if isAdmin() || (isAuthenticated() && existing().clientId == request.auth.uid);
+        allow create: if isValidId(confId)
+          && isAuthenticated()
+          && isValidConfirmation(incoming())
+          && incoming().submittedAt == request.time
+          && (
+            (
+              incoming().clientId == request.auth.uid
+              && get(/databases/$(database)/documents/projects/$(projectId)).data.clientId == request.auth.uid
+            ) || isAdmin()
+          );
+        allow update, delete: if isAdmin();
+      }
+
+      // Discussion & revision notes subcollection
+      match /notes/{noteId} {
+        allow get: if isAdmin() || (isAuthenticated() && existing().clientId == request.auth.uid);
+        allow list: if isAdmin() || (isAuthenticated() && existing().clientId == request.auth.uid);
+        allow create: if isValidId(noteId)
+          && isAuthenticated()
+          && isValidNote(incoming())
+          && incoming().authorUid == request.auth.uid
+          && incoming().createdAt == request.time
+          && (
+            (
+              incoming().authorRole == 'client'
+              && incoming().clientId == request.auth.uid
+              && get(/databases/$(database)/documents/projects/$(projectId)).data.clientId == request.auth.uid
+            ) || (
+              incoming().authorRole == 'admin'
+              && isAdmin()
+              && incoming().clientId == get(/databases/$(database)/documents/projects/$(projectId)).data.clientId
+            )
+          );
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // Notifications (admin & client activity stream)
+    match /notifications/{notifId} {
+      allow get: if isAdmin() || (
+        isAuthenticated()
+        && existing().recipientRole == 'client'
+        && existing().recipientUid == request.auth.uid
+      );
+      allow list: if isAdmin() || (
+        isAuthenticated()
+        && existing().recipientRole == 'client'
+        && existing().recipientUid == request.auth.uid
+      );
+      allow create: if isValidId(notifId)
+        && isAuthenticated()
+        && isValidNotification(incoming())
+        && incoming().actorUid == request.auth.uid
+        && incoming().read == false
+        && incoming().createdAt == request.time
+        && (
+          isAdmin() || (
+            incoming().recipientRole == 'admin'
+            && incoming().recipientUid == 'ADMIN'
+            && incoming().type in [
+              'ORDER_CREATED', 'DP_CONFIRMED', 'FINAL_CONFIRMED',
+              'REVISION_NOTE', 'CLIENT_PROFILE_UPDATED', 'CLIENT_REGISTERED'
+            ]
+          )
+        );
+      allow update: if isAuthenticated()
+        && incoming().diff(existing()).affectedKeys().hasOnly(['read'])
+        && incoming().read == true
+        && (
+          (isAdmin() && existing().recipientRole == 'admin') ||
+          (existing().recipientRole == 'client' && existing().recipientUid == request.auth.uid)
+        );
+      allow delete: if isAdmin();
+    }
+
+    // Default deny any unconfigured paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

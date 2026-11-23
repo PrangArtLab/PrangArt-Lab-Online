@@ -15,9 +15,11 @@ export interface StoredUser extends ClientUser {
   passwordHash: string;
 }
 
-export interface AdminCredential {
-  salt: string;
-  hash: string;
+export interface AdminAccount {
+  email: string;
+  name: string;
+  passwordSalt: string;
+  passwordHash: string;
 }
 
 export interface AIQuotaRecord {
@@ -27,7 +29,7 @@ export interface AIQuotaRecord {
 }
 
 export interface StoreSchema {
-  adminCredential: AdminCredential | null;
+  adminAccount: AdminAccount;
   users: StoredUser[];
   projects: Project[];
   notifications: StudioNotification[];
@@ -89,6 +91,18 @@ export function verifySessionToken(token?: string | null): SessionPayload | null
   } catch {
     return null;
   }
+}
+
+function buildDefaultAdminAccount(): AdminAccount {
+  const email = (process.env.ADMIN_EMAIL || 'prangart.lab@gmail.com').trim().toLowerCase();
+  const initialPassword = process.env.ADMIN_PASSWORD || '150102';
+  const hashed = hashPassword(initialPassword);
+  return {
+    email,
+    name: 'Admin PrangArt Lab',
+    passwordSalt: hashed.salt,
+    passwordHash: hashed.hash,
+  };
 }
 
 function buildSeedStore(): StoreSchema {
@@ -183,7 +197,7 @@ function buildSeedStore(): StoreSchema {
   };
 
   return {
-    adminCredential: null,
+    adminAccount: buildDefaultAdminAccount(),
     users: [demoUser],
     projects: [demoProject],
     notifications: [demoNotif],
@@ -209,15 +223,28 @@ class StudioStore {
         const raw = fs.readFileSync(STORE_PATH, 'utf8');
         const parsed = JSON.parse(raw) as Partial<StoreSchema>;
         const seed = buildSeedStore();
-        return {
-          adminCredential: parsed.adminCredential ?? null,
+        const siteContent = parsed.siteContent ?? seed.siteContent;
+        // Ensure zero image fields persist in portfolio items
+        if (Array.isArray(siteContent.portfolio)) {
+          siteContent.portfolio = siteContent.portfolio.map((item) => {
+            const copy = { ...item } as Record<string, unknown>;
+            delete copy.image;
+            return copy as unknown as typeof item;
+          });
+        }
+        const loaded: StoreSchema = {
+          adminAccount: parsed.adminAccount?.email ? parsed.adminAccount : seed.adminAccount,
           users: Array.isArray(parsed.users) ? parsed.users : seed.users,
           projects: Array.isArray(parsed.projects) ? parsed.projects : seed.projects,
           notifications: Array.isArray(parsed.notifications) ? parsed.notifications : seed.notifications,
           catalog: parsed.catalog ?? seed.catalog,
-          siteContent: parsed.siteContent ?? seed.siteContent,
+          siteContent,
           aiQuota: parsed.aiQuota ?? {},
         };
+        if (!parsed.adminAccount?.email) {
+          this.persistData(loaded);
+        }
+        return loaded;
       }
     } catch (err) {
       console.error('Failed to read store, initializing fresh store:', err);

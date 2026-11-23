@@ -108,7 +108,8 @@ jobs:
             NODE_ENV=production
           secrets: |
             GEMINI_API_KEY=GEMINI_API_KEY:latest
-            ADMIN_PASSCODE=ADMIN_PASSCODE:latest
+            ADMIN_EMAIL=ADMIN_EMAIL:latest
+            ADMIN_PASSWORD=ADMIN_PASSWORD:latest
             SESSION_SECRET=SESSION_SECRET:latest
 
       - name: Show deployed URL
