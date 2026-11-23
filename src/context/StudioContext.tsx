@@ -492,12 +492,16 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
           cleanedSettings.studioBankAccount !== (rawSettings.studioBankAccount || '');
 
         if (changed) {
-          await setDoc(doc(db, 'config', 'siteContent'), {
-            portfolio: filteredPortfolio,
-            testimonials: filteredTestimonials,
-            settings: cleanedSettings,
-            updatedAt: new Date().toISOString(),
-          });
+          await setDoc(
+            doc(db, 'config', 'siteContent'),
+            {
+              portfolio: filteredPortfolio,
+              testimonials: filteredTestimonials,
+              settings: cleanedSettings,
+              updatedAt: new Date().toISOString(),
+            },
+            { merge: true }
+          );
         }
       }
     } catch (err) {
@@ -1463,10 +1467,14 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
 
   const saveAdminCatalog = async (nextCatalog: ServiceCatalog) => {
     try {
-      await setDoc(doc(db, 'config', 'catalog'), {
-        ...nextCatalog,
-        updatedAt: new Date().toISOString(),
-      });
+      await setDoc(
+        doc(db, 'config', 'catalog'),
+        {
+          ...nextCatalog,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
       showToast('Katalog Tersimpan', 'Tarif dan fasilitas layanan diperbarui real-time ke seluruh halaman.');
     } catch (err) {
       rethrowReadableFirestoreError(err, OperationType.UPDATE, 'config/catalog', 'Gagal menyimpan katalog layanan.');
@@ -1487,17 +1495,36 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
   };
 
   const saveAdminSiteContent = async (content: Partial<SiteContent>) => {
-    const current = siteContent || DEFAULT_SITE_CONTENT;
-    const merged: SiteContent = {
-      portfolio: content.portfolio ?? current.portfolio,
-      testimonials: content.testimonials ?? current.testimonials,
-      settings: content.settings ? { ...current.settings, ...content.settings } : current.settings,
-    };
     try {
-      await setDoc(doc(db, 'config', 'siteContent'), {
-        ...merged,
-        updatedAt: new Date().toISOString(),
-      });
+      // Read authoritative Firestore doc from server first so partial updates never overwrite existing data
+      const serverSnap = await getDocFromServer(doc(db, 'config', 'siteContent')).catch(() => null);
+      const serverData = serverSnap?.exists() ? (serverSnap.data() as Partial<SiteContent>) : null;
+      const base: SiteContent = {
+        portfolio: Array.isArray(serverData?.portfolio)
+          ? serverData.portfolio
+          : siteContent?.portfolio ?? DEFAULT_SITE_CONTENT.portfolio,
+        testimonials: Array.isArray(serverData?.testimonials)
+          ? serverData.testimonials
+          : siteContent?.testimonials ?? DEFAULT_SITE_CONTENT.testimonials,
+        settings: serverData?.settings
+          ? { ...DEFAULT_SITE_CONTENT.settings, ...serverData.settings }
+          : siteContent?.settings ?? DEFAULT_SITE_CONTENT.settings,
+      };
+
+      const merged: SiteContent = {
+        portfolio: content.portfolio ?? base.portfolio,
+        testimonials: content.testimonials ?? base.testimonials,
+        settings: content.settings ? { ...base.settings, ...content.settings } : base.settings,
+      };
+
+      await setDoc(
+        doc(db, 'config', 'siteContent'),
+        {
+          ...merged,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
       showToast('Konten Tersimpan', 'Portofolio, testimoni, atau pengaturan studio diperbarui.');
     } catch (err) {
       rethrowReadableFirestoreError(err, OperationType.UPDATE, 'config/siteContent', 'Gagal menyimpan konten studio.');
@@ -1506,12 +1533,21 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
 
   const resetAdminSiteContent = async () => {
     try {
-      const fresh = JSON.parse(JSON.stringify(DEFAULT_SITE_CONTENT)) as SiteContent;
-      await setDoc(doc(db, 'config', 'siteContent'), {
-        ...fresh,
-        updatedAt: new Date().toISOString(),
-      });
-      showToast('Konten Dikosongkan', 'Portofolio dan testimoni dikembalikan kosong agar dapat diisi manual.');
+      // Preserve active studio bank & contact settings while clearing portfolio & testimonials
+      const serverSnap = await getDocFromServer(doc(db, 'config', 'siteContent')).catch(() => null);
+      const serverData = serverSnap?.exists() ? (serverSnap.data() as Partial<SiteContent>) : null;
+      const preservedSettings = serverData?.settings || siteContent?.settings || DEFAULT_SITE_CONTENT.settings;
+      await setDoc(
+        doc(db, 'config', 'siteContent'),
+        {
+          portfolio: [],
+          testimonials: [],
+          settings: preservedSettings,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+      showToast('Konten Dikosongkan', 'Portofolio dan testimoni dikosongkan sementara pengaturan studio tetap dipertahankan.');
     } catch (err) {
       rethrowReadableFirestoreError(err, OperationType.UPDATE, 'config/siteContent', 'Gagal mereset konten studio.');
     }

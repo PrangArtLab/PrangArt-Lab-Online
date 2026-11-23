@@ -158,6 +158,8 @@ export function AdminDashboardPage() {
   });
   const [settingsDraft, setSettingsDraft] = useState<StudioSettings | null>(null);
   const [contentSaving, setContentSaving] = useState(false);
+  const [confirmResetCatalog, setConfirmResetCatalog] = useState(false);
+  const [confirmResetContent, setConfirmResetContent] = useState(false);
 
   useEffect(() => {
     try {
@@ -1943,15 +1945,39 @@ export function AdminDashboardPage() {
                     Perubahan langsung disinkronkan ke halaman Pemesanan Klien.
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    disabled={catalogSaving}
-                    onClick={() => void handleResetCatalog()}
-                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer disabled:opacity-60"
-                  >
-                    Reset Standar
-                  </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {confirmResetCatalog ? (
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-red-600 dark:text-red-400 font-semibold">Reset ke tarif awal?</span>
+                      <button
+                        type="button"
+                        disabled={catalogSaving}
+                        onClick={() => {
+                          setConfirmResetCatalog(false);
+                          void handleResetCatalog();
+                        }}
+                        className="px-3 py-2 rounded-xl bg-red-600 text-white font-semibold cursor-pointer disabled:opacity-60"
+                      >
+                        Ya, Reset
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmResetCatalog(false)}
+                        className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 font-semibold cursor-pointer"
+                      >
+                        Batal
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={catalogSaving}
+                      onClick={() => setConfirmResetCatalog(true)}
+                      className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer disabled:opacity-60"
+                    >
+                      Reset Standar
+                    </button>
+                  )}
                   <button
                     type="button"
                     disabled={catalogSaving}
@@ -2228,7 +2254,7 @@ export function AdminDashboardPage() {
 
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5">
                   <h2 className="text-base font-display font-bold text-slate-900 dark:text-slate-100">
-                    Keamanan Firebase & Reset Konten
+                    Keamanan Firebase &amp; Persistensi Data Republish
                   </h2>
                   <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 space-y-2 text-xs text-slate-600 dark:text-slate-400">
                     <div className="flex items-center gap-2 font-semibold text-emerald-700 dark:text-emerald-400">
@@ -2236,22 +2262,46 @@ export function AdminDashboardPage() {
                       <span>Terverifikasi Google Auth ({adminProfile?.email || 'prangart.lab@gmail.com'})</span>
                     </div>
                     <p className="leading-relaxed">
-                      Hak akses Admin dilindungi langsung oleh Cloud Firestore Security Rules dan verifikasi token Google. Semua aktivitas klien masuk secara real-time.
+                      Seluruh data pesanan, klien, konfirmasi transfer, catatan revisi, portofolio, testimoni, dan pengaturan rekening tersimpan permanen di Cloud Firestore sehingga tetap utuh dan tidak hilang ketika aplikasi di-republish.
                     </p>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
+                  <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
                     <span className="text-xs text-slate-500">
-                      Kosongkan seluruh portofolio & testimoni untuk pengisian ulang manual:
+                      Kosongkan daftar portofolio &amp; testimoni (pengaturan rekening &amp; WA tetap aman):
                     </span>
-                    <button
-                      type="button"
-                      disabled={contentSaving}
-                      onClick={() => void handleResetSiteContent()}
-                      className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer shrink-0 disabled:opacity-60"
-                    >
-                      Kosongkan Konten Publik
-                    </button>
+                    {confirmResetContent ? (
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-red-600 dark:text-red-400 font-semibold">Yakin kosongkan?</span>
+                        <button
+                          type="button"
+                          disabled={contentSaving}
+                          onClick={() => {
+                            setConfirmResetContent(false);
+                            void handleResetSiteContent();
+                          }}
+                          className="px-3 py-2 rounded-xl bg-red-600 text-white font-semibold cursor-pointer disabled:opacity-60"
+                        >
+                          Ya, Kosongkan
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmResetContent(false)}
+                          className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 font-semibold cursor-pointer"
+                        >
+                          Batal
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={contentSaving}
+                        onClick={() => setConfirmResetContent(true)}
+                        className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer shrink-0 disabled:opacity-60"
+                      >
+                        Kosongkan Portofolio &amp; Testimoni
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
