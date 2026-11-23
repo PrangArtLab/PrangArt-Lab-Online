@@ -146,14 +146,16 @@ export function ClientAuthCard({ onSuccess, compactTitle }: ClientAuthCardProps)
             {loading ? 'Memproses...' : 'Masuk ke Ruang Klien'}
           </button>
 
-          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 text-xs">
-            <span className="text-slate-500 dark:text-slate-400">Ingin coba akun demo?</span>
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span className="text-slate-500 dark:text-slate-400">
+              Akun trial: <span className="font-mono">siti@sanggar.id</span> · sandi: <span className="font-mono">1234</span>
+            </span>
             <button
               type="button"
               onClick={fillDemo}
               className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer"
             >
-              Isi Akun Siti (siti@sanggar.id)
+              Isi Otomatis
             </button>
           </div>
         </form>

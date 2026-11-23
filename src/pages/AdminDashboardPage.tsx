@@ -46,6 +46,7 @@ export function AdminDashboardPage() {
     siteContent,
     setupAdminPasscode,
     loginAdmin,
+    logoutClient,
     changeAdminPasscode,
     refreshAdminDashboard,
     adminUpdateProject,
@@ -64,6 +65,7 @@ export function AdminDashboardPage() {
   const [confirmPasscodeInput, setConfirmPasscodeInput] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
 
   // Dashboard state
   const [activeTab, setActiveTab] = useState<AdminTab>('projects');
@@ -156,13 +158,20 @@ export function AdminDashboardPage() {
 
   if (clientUser) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-4">
+      <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-5">
         <h1 className="text-2xl font-display font-bold text-slate-900 dark:text-slate-100">
           Sesi Klien Sedang Aktif
         </h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">
           Anda sedang masuk sebagai Klien ({clientUser.email}). Keluar dari akun klien terlebih dahulu sebelum membuka Panel Admin.
         </p>
+        <button
+          type="button"
+          onClick={() => logoutClient()}
+          className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors cursor-pointer"
+        >
+          Keluar dari Sesi Klien & Buka Login Admin
+        </button>
       </div>
     );
   }
@@ -171,11 +180,14 @@ export function AdminDashboardPage() {
   if (!adminToken) {
     const handleAuthSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
+      setAuthError('');
       setAuthLoading(true);
       try {
         if (adminConfigured === false) {
           if (passcodeInput !== confirmPasscodeInput) {
-            showToast('Tidak Cocok', 'Konfirmasi PIN Admin tidak sesuai.', 'warning');
+            const msg = 'Konfirmasi PIN Admin tidak sesuai.';
+            setAuthError(msg);
+            showToast('Tidak Cocok', msg, 'warning');
             return;
           }
           await setupAdminPasscode(passcodeInput);
@@ -185,7 +197,9 @@ export function AdminDashboardPage() {
         setPasscodeInput('');
         setConfirmPasscodeInput('');
       } catch (err: unknown) {
-        showToast('Akses Ditolak', err instanceof Error ? err.message : 'PIN salah.', 'error');
+        const msg = err instanceof Error ? err.message : 'PIN / Kata Sandi Admin salah.';
+        setAuthError(msg);
+        showToast('Akses Ditolak', msg, 'error');
       } finally {
         setAuthLoading(false);
       }
@@ -209,6 +223,14 @@ export function AdminDashboardPage() {
             </p>
           </div>
 
+          {adminViaEnv && (
+            <div className="rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/70 dark:bg-indigo-950/30 p-3.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              PIN Admin saat ini aktif melalui variabel rahasia <strong className="font-mono">ADMIN_PASSCODE</strong> pada panel{' '}
+              <strong>Settings → Secrets</strong>. Untuk mengganti atau mereset PIN, ubah nilai{' '}
+              <strong className="font-mono">ADMIN_PASSCODE</strong> pada panel Secrets lalu muat ulang server.
+            </div>
+          )}
+
           <form onSubmit={handleAuthSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold mb-1.5">
@@ -220,7 +242,10 @@ export function AdminDashboardPage() {
                   required
                   minLength={4}
                   value={passcodeInput}
-                  onChange={(e) => setPasscodeInput(e.target.value)}
+                  onChange={(e) => {
+                    setPasscodeInput(e.target.value);
+                    if (authError) setAuthError('');
+                  }}
                   placeholder="Masukkan PIN Admin"
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 pr-11 text-sm font-mono tracking-wider"
                 />
@@ -245,11 +270,20 @@ export function AdminDashboardPage() {
                   required
                   minLength={4}
                   value={confirmPasscodeInput}
-                  onChange={(e) => setConfirmPasscodeInput(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPasscodeInput(e.target.value);
+                    if (authError) setAuthError('');
+                  }}
                   placeholder="Ulangi PIN Admin"
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm font-mono tracking-wider"
                 />
               </div>
+            )}
+
+            {authError && (
+              <p className="text-xs font-medium text-red-600 dark:text-red-400" role="alert">
+                {authError}
+              </p>
             )}
 
             <button
