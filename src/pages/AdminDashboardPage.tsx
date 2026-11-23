@@ -48,6 +48,7 @@ export function AdminDashboardPage() {
     loginAdmin,
     logoutClient,
     changeAdminPasscode,
+    refreshAdminStatus,
     refreshAdminDashboard,
     adminUpdateProject,
     adminDeleteProject,
@@ -118,6 +119,12 @@ export function AdminDashboardPage() {
       setSettingsDraft({ ...siteContent.settings });
     }
   }, [siteContent?.settings]);
+
+  useEffect(() => {
+    if (!adminToken) {
+      void refreshAdminStatus();
+    }
+  }, [adminToken, refreshAdminStatus]);
 
   const kpiStats = useMemo(() => {
     let pendingVerify = 0;
@@ -240,7 +247,7 @@ export function AdminDashboardPage() {
                 <input
                   type={showPass ? 'text' : 'password'}
                   required
-                  minLength={4}
+                  minLength={adminConfigured === false ? 4 : 1}
                   value={passcodeInput}
                   onChange={(e) => {
                     setPasscodeInput(e.target.value);
