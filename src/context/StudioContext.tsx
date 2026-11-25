@@ -26,6 +26,7 @@ import {
   db,
   googleProvider,
   handleFirestoreError,
+  isGoogleAccount,
   testFirestoreConnection,
 } from '../firebase';
 import {
@@ -569,7 +570,11 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsub = onIdTokenChanged(auth, async (user) => {
       setFirebaseUser(user);
-      if (!user) {
+      if (!user || !isGoogleAccount(user) || !user.emailVerified) {
+        if (user && (!isGoogleAccount(user) || !user.emailVerified)) {
+          void signOut(auth).catch(() => {});
+        }
+        setFirebaseUser(null);
         setIdToken(null);
         setClientUser(null);
         setAdminProfile(null);
@@ -596,17 +601,7 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
         setIdToken(token);
 
         const emailLower = (user.email || '').toLowerCase();
-        let hasAdminDoc = false;
-        if (user.emailVerified && emailLower !== ADMIN_EMAIL) {
-          try {
-            const adminSnap = await getDocFromServer(doc(db, 'admins', user.uid));
-            hasAdminDoc = adminSnap.exists();
-          } catch {
-            hasAdminDoc = false;
-          }
-        }
-
-        const adminOk = Boolean(user.emailVerified && (emailLower === ADMIN_EMAIL || hasAdminDoc));
+        const adminOk = Boolean(isGoogleAccount(user) && user.emailVerified && emailLower === ADMIN_EMAIL);
         setIsAdminVerified(adminOk);
         if (adminOk) {
           setAdminProfile({
@@ -614,15 +609,19 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
             email: emailLower,
             name: user.displayName || 'Admin PrangArt Lab',
           });
+          setClientUser(null);
+          setRawClientProjects([]);
+          setClientConfirmations({});
+          setClientNotes({});
+          setClientNotifications([]);
           void seedStudioConfigIfMissing();
         } else {
           setAdminProfile(null);
-        }
-
-        if (user.emailVerified) {
-          const profile = await ensureClientUserProfile(user).catch(() => null);
-          if (profile) {
-            setClientUser(profile);
+          if (user.emailVerified) {
+            const profile = await ensureClientUserProfile(user).catch(() => null);
+            if (profile) {
+              setClientUser(profile);
+            }
           }
         }
       } catch (err) {
@@ -637,7 +636,14 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
 
   // 3. Client Real-Time Firestore Listeners (user doc, projects, subcollections, notifications)
   useEffect(() => {
-    if (!firebaseUser || !firebaseUser.emailVerified) return;
+    if (
+      !firebaseUser ||
+      !firebaseUser.emailVerified ||
+      isAdminVerified ||
+      (firebaseUser.email || '').toLowerCase() === ADMIN_EMAIL
+    ) {
+      return;
+    }
     const uid = firebaseUser.uid;
     const subUnsubs = new Map<string, { conf: Unsubscribe; notes: Unsubscribe }>();
 
@@ -788,11 +794,11 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
       }
       subUnsubs.clear();
     };
-  }, [firebaseUser, showToast]);
+  }, [firebaseUser, isAdminVerified, showToast]);
 
   // 4. Admin Real-Time Firestore Listeners (all projects, notifications, users)
   useEffect(() => {
-    if (!firebaseUser || !isAdminVerified) return;
+    if (!firebaseUser || !isAdminVerified || (firebaseUser.email || '').toLowerCase() !== ADMIN_EMAIL) return;
     const subUnsubs = new Map<string, { conf: Unsubscribe; notes: Unsubscribe }>();
 
     const unsubProjects = onSnapshot(
@@ -965,31 +971,63 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
 
     if (code === 'auth/unauthorized-domain' || rawMsg.includes('auth/unauthorized-domain')) {
       const host = typeof window !== 'undefined' ? window.location.hostname : 'domain ini';
-      return `Domain "${host}" belum diizinkan pada pengaturan Authentication Firebase. Tambahkan "${host}" ke Authorized Domains di Firebase Console agar proses masuk dapat digunakan.`;
+      return `Domain "${host}" belum terdaftar pada daftar domain resmi autentikasi Google.`;
     }
     if (code === 'auth/popup-blocked' || rawMsg.includes('auth/popup-blocked')) {
-      return 'Jendela masuk diblokir oleh browser. Izinkan pop-up untuk situs ini lalu coba lagi.';
+      return 'Jendela masuk Google diblokir oleh browser. Izinkan pop-up untuk situs ini lalu coba lagi.';
     }
     if (code === 'auth/popup-closed-by-user' || rawMsg.includes('auth/popup-closed-by-user')) {
-      return 'Jendela masuk ditutup sebelum proses selesai.';
+      return 'Jendela masuk Google ditutup sebelum proses selesai.';
     }
     if (code === 'auth/cancelled-popup-request' || rawMsg.includes('auth/cancelled-popup-request')) {
       return 'Permintaan masuk dibatalkan. Silakan coba lagi.';
     }
     if (code === 'auth/network-request-failed' || rawMsg.includes('auth/network-request-failed')) {
-      return 'Koneksi internet bermasalah saat menghubungi server autentikasi. Coba lagi.';
+      return 'Koneksi internet bermasalah saat menghubungi layanan masuk Google. Silakan coba lagi.';
+    }
+    if (code === 'auth/user-disabled' || rawMsg.includes('auth/user-disabled')) {
+      return 'Akun email Google ini sedang dinonaktifkan.';
+    }
+    if (code === 'auth/too-many-requests' || rawMsg.includes('auth/too-many-requests')) {
+      return 'Terlalu banyak percobaan masuk. Tunggu beberapa saat sebelum mencoba lagi.';
+    }
+    if (
+      code === 'auth/account-exists-with-different-credential' ||
+      rawMsg.includes('auth/account-exists-with-different-credential')
+    ) {
+      return 'Email ini wajib masuk menggunakan metode akun Google.';
+    }
+    if (
+      code === 'auth/invalid-credential' ||
+      code === 'auth/wrong-password' ||
+      code === 'auth/user-not-found'
+    ) {
+      return 'Kredensial masuk tidak valid. Pastikan Anda masuk menggunakan email Google yang benar.';
+    }
+    if (code === 'auth/expired-action-code' || code === 'auth/invalid-action-code') {
+      return 'Tautan verifikasi atau pemulihan akun sudah kedaluwarsa atau tidak berlaku. Silakan ulangi proses masuk dengan Google.';
+    }
+    if (code === 'auth/operation-not-allowed') {
+      return 'Metode masuk dengan email Google belum diaktifkan pada layanan autentikasi.';
     }
     if (role === 'admin') {
       return err instanceof Error && !rawMsg.startsWith('Firebase:') ? err.message : 'Gagal masuk ke Panel Admin.';
     }
-    return err instanceof Error ? err.message : 'Gagal masuk ke Ruang Klien.';
+    return err instanceof Error && !rawMsg.startsWith('Firebase:')
+      ? err.message
+      : 'Gagal masuk dengan email Google. Silakan coba lagi.';
   };
 
   const loginClientWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      if (!result.user.emailVerified) {
-        throw new Error('Email akun Google Anda belum terverifikasi.');
+      if (!isGoogleAccount(result.user) || !result.user.emailVerified) {
+        await signOut(auth).catch(() => {});
+        throw new Error('Masuk wajib menggunakan email Google yang terverifikasi.');
+      }
+      if ((result.user.email || '').toLowerCase() === ADMIN_EMAIL) {
+        await signOut(auth).catch(() => {});
+        throw new Error('Akun pengelola tidak digunakan di Ruang Klien. Gunakan email Google lain untuk masuk sebagai Klien.');
       }
       const profile = await ensureClientUserProfile(result.user);
       setClientUser(profile);
@@ -1014,23 +1052,14 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
     }
 
     const emailLower = (user.email || '').toLowerCase();
-
-    let hasAdminDoc = false;
-    if (user.emailVerified && emailLower !== ADMIN_EMAIL) {
-      try {
-        const adminSnap = await getDocFromServer(doc(db, 'admins', user.uid));
-        hasAdminDoc = adminSnap.exists();
-      } catch {
-        hasAdminDoc = false;
-      }
-    }
-
-    const adminOk = Boolean(user.emailVerified && (emailLower === ADMIN_EMAIL || hasAdminDoc));
+    const adminOk = Boolean(isGoogleAccount(user) && user.emailVerified && emailLower === ADMIN_EMAIL);
     if (!adminOk) {
+      await signOut(auth).catch(() => {});
       throw new Error('Akses Admin ditolak.');
     }
 
     setIsAdminVerified(true);
+    setClientUser(null);
     setAdminProfile({
       uid: user.uid,
       email: emailLower,
@@ -1102,7 +1131,8 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
 
     const svcKey = String(payload.serviceLine || 'tari') as ServiceLineKey;
     const svc = (catalog || DEFAULT_SERVICE_CATALOG)[svcKey];
-    const totalPrice = Math.max(1, Math.round(Number(payload.totalPrice || 0)));
+    const rawTotal = Number(payload.totalPrice);
+    const totalPrice = Number.isFinite(rawTotal) ? Math.max(1, Math.round(rawTotal)) : 1;
     const dpAmount = Math.round(totalPrice / 2);
     const remainingAmount = totalPrice - dpAmount;
     const projectId = `PAL-${Date.now()}`;
@@ -1133,7 +1163,9 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
       packageName,
       contractAgreed: Boolean(payload.contractAgreed),
       hasVocalAddon: Boolean(payload.hasVocalAddon),
-      addonAmount: Math.max(0, Math.round(Number(payload.addonAmount || 0))),
+      addonAmount: Number.isFinite(Number(payload.addonAmount))
+        ? Math.max(0, Math.round(Number(payload.addonAmount)))
+        : 0,
       sorakOption: payload.sorakOption ? String(payload.sorakOption).slice(0, 120) : null,
       totalPrice,
       dpAmount,
@@ -1160,7 +1192,7 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
       // Save WhatsApp onto user profile if still empty
       if (clientUser && !clientUser.wa && clientWa && clientWa !== '-') {
         await updateDoc(doc(db, 'users', user.uid), {
-          name: clientName,
+          name: clientName.slice(0, 120),
           wa: clientWa,
           updatedAt: serverTimestamp(),
         }).catch(() => {});
@@ -1419,6 +1451,11 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
       if (typeof payload.finishingNotes === 'string') {
         const cleanFinishingNotes = payload.finishingNotes.trim().slice(0, 1000);
         patch.finishingNotes = cleanFinishingNotes || null;
+        if (cleanFinishingNotes && !notifTitle) {
+          notifType = 'STATUS_UPDATED';
+          notifTitle = `Catatan Finishing Diperbarui: ${project.judul}`;
+          notifMsg = `Admin mencatat: "${cleanFinishingNotes.slice(0, 140)}${cleanFinishingNotes.length > 140 ? '…' : ''}"`;
+        }
       }
     }
 
@@ -1461,7 +1498,12 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
         });
       }
 
-      showToast('Proyek Diperbarui', 'Perubahan tersimpan di Firestore & klien menerima notifikasi real-time.');
+      showToast(
+        'Proyek Diperbarui',
+        notifTitle && project.clientId
+          ? 'Perubahan tersimpan di Firestore & klien menerima notifikasi real-time.'
+          : 'Perubahan proyek berhasil disimpan di Firestore.'
+      );
       return project;
     } catch (err) {
       try {
@@ -1601,7 +1643,7 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
         catalog,
         siteContent,
         clientUser,
-        clientToken: idToken,
+        clientToken: isAdminVerified ? null : idToken,
         clientProjects,
         clientNotifications,
         clientUnreadCount,

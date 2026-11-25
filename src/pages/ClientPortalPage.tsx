@@ -149,9 +149,14 @@ export function ClientPortalPage() {
 
   const handleSubmitPaymentConfirm = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!payModalProject) return;
-    if (Number(payAmount) <= 0) {
+    if (!payModalProject || paySubmitting) return;
+    const numericAmount = Number(payAmount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
       showToast('Nominal Tidak Valid', 'Masukkan nominal transfer yang valid (lebih dari Rp0).', 'error');
+      return;
+    }
+    if (!senderName.trim()) {
+      showToast('Nama Pengirim Kosong', 'Masukkan nama pemilik rekening atau pengirim transfer.', 'error');
       return;
     }
     if (proofUrl.trim() && !safeExternalUrl(proofUrl.trim())) {
@@ -162,12 +167,12 @@ export function ClientPortalPage() {
     try {
       await confirmPayment(payModalProject.project.id, {
         stage: payModalProject.stage,
-        amount: Number(payAmount),
-        senderName,
+        amount: Math.round(numericAmount),
+        senderName: senderName.trim(),
         bankMethod,
         transferDate,
-        referenceNote,
-        proofUrl,
+        referenceNote: referenceNote.trim(),
+        proofUrl: proofUrl.trim(),
       });
       setPayModalProject(null);
     } catch (err: unknown) {
@@ -179,6 +184,7 @@ export function ClientPortalPage() {
   };
 
   const handleSendNote = async (projectId: string) => {
+    if (noteLoadingId === projectId) return;
     const msg = (noteInputs[projectId] || '').trim();
     if (!msg) return;
     setNoteLoadingId(projectId);
@@ -195,9 +201,19 @@ export function ClientPortalPage() {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (profileSaving) return;
+    const cleanName = (profileName || clientUser.name).trim();
+    if (!cleanName) {
+      showToast('Nama Tidak Boleh Kosong', 'Masukkan nama lengkap atau nama sanggar Anda.', 'error');
+      return;
+    }
+    if (profileWa.replace(/\D/g, '').length < 8) {
+      showToast('WhatsApp Tidak Valid', 'Masukkan minimal 8 digit nomor WhatsApp aktif.', 'error');
+      return;
+    }
     setProfileSaving(true);
     try {
-      await updateClientProfile(profileName || clientUser.name, profileWa);
+      await updateClientProfile(cleanName, profileWa.trim());
     } catch (err: unknown) {
       showToast('Gagal Simpan Profil', err instanceof Error ? err.message : 'Error', 'error');
     } finally {

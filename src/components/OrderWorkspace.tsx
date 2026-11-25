@@ -443,6 +443,21 @@ export function OrderWorkspace({ embedded = false, onSubmitted }: OrderWorkspace
     setBudayaDaerah('');
     setKotaProvinsi('');
     setAiPreview('');
+    setAiFields({
+      tema: '',
+      latar: '',
+      inspirasi: '',
+      gagasan: '',
+      gambaran: '',
+      perkembangan: '',
+      karakter: '',
+      sumberGerak: '',
+      musik: '',
+      instrumen: '',
+      kostum: '',
+      makna: '',
+      pesan: '',
+    });
     showToast('Draf Direset', 'Isian formulir pemesanan telah dikosongkan.', 'info');
   };
 
@@ -490,7 +505,8 @@ export function OrderWorkspace({ embedded = false, onSubmitted }: OrderWorkspace
     }
 
     const isCustomPkg = packageKey === 'custom' || Boolean(activePkg.isCustom);
-    const parsedCustom = customPrice ? Math.max(0, Math.round(Number(customPrice))) : 0;
+    const rawCustom = Number(customPrice);
+    const parsedCustom = customPrice && Number.isFinite(rawCustom) && rawCustom > 0 ? Math.round(rawCustom) : 0;
 
     let basePrice = 0;
     let breakdownNote = '';
@@ -501,7 +517,8 @@ export function OrderWorkspace({ embedded = false, onSubmitted }: OrderWorkspace
       basePrice = parsedCustom;
       breakdownNote = 'Harga kesepakatan khusus';
     } else if (serviceLine === 'transkripsi') {
-      const rate = Number(activePkg.price || 0);
+      const rawRate = Number(activePkg.price || 0);
+      const rate = Number.isFinite(rawRate) && rawRate > 0 ? Math.round(rawRate) : 0;
       if (packageKey === 'komplet' || activePkg.billingUnit === 'per_min_complete') {
         basePrice = rate * billableMinutes;
         breakdownNote = `${formatRupiah(rate)} × ${billableMinutes} mnt (min. 1 mnt, full ensemble)`;
@@ -511,10 +528,12 @@ export function OrderWorkspace({ embedded = false, onSubmitted }: OrderWorkspace
         breakdownNote = `${formatRupiah(rate)} × ${billableMinutes} mnt × ${inst} instrumen`;
       }
     } else {
-      basePrice = Number(activePkg.price || 0);
+      const rawPkgPrice = Number(activePkg.price || 0);
+      basePrice = Number.isFinite(rawPkgPrice) && rawPkgPrice > 0 ? Math.round(rawPkgPrice) : 0;
     }
 
-    const addonPrice = Number(activeSvc.addonPrice || 250000);
+    const rawAddon = Number(activeSvc.addonPrice || 250000);
+    const addonPrice = Number.isFinite(rawAddon) && rawAddon >= 0 ? Math.round(rawAddon) : 250000;
     const addonAmount = serviceLine !== 'transkripsi' && hasVocalAddon ? addonPrice : 0;
     const totalPrice = basePrice + addonAmount;
 
@@ -610,6 +629,43 @@ export function OrderWorkspace({ embedded = false, onSubmitted }: OrderWorkspace
       return null;
     }
 
+    if (!sanggar.trim()) {
+      showToast(
+        'Nama Pemesan Kosong',
+        'Isi Nama Pemesan / Sanggar / Instansi pada Langkah 02 terlebih dahulu.',
+        'error'
+      );
+      return null;
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      showToast(
+        'Email Kontak Tidak Valid',
+        'Masukkan alamat email aktif yang valid agar Admin dapat menghubungi Anda.',
+        'error'
+      );
+      return null;
+    }
+
+    if (!judul.trim()) {
+      showToast(
+        'Judul Karya Kosong',
+        'Isi Judul Tari / Proyek Musik pada Langkah 02 terlebih dahulu.',
+        'error'
+      );
+      return null;
+    }
+
+    if (serviceLine === 'tari' && packageKey === 'standar' && selectedStruktur.length === 0) {
+      showToast(
+        'Struktur Tari Belum Dipilih',
+        'Pilih minimal satu Struktur Tari / Suasana untuk Paket Standar.',
+        'warning'
+      );
+      return null;
+    }
+
     const waDigits = wa.replace(/\D/g, '');
     if (waDigits.length < 8) {
       showToast(
@@ -638,10 +694,19 @@ export function OrderWorkspace({ embedded = false, onSubmitted }: OrderWorkspace
       return null;
     }
 
-    if (pricing.isCustomPkg && pricing.basePrice <= 0) {
+    if (pricing.isCustomPkg && (!Number.isFinite(pricing.basePrice) || pricing.basePrice <= 0)) {
       showToast(
         'Harga Kesepakatan Kosong',
         'Untuk Paket Custom, wajib mengisi nominal Harga Kesepakatan (Rp) sesuai hasil diskusi.',
+        'error'
+      );
+      return null;
+    }
+
+    if (!Number.isFinite(pricing.totalPrice) || pricing.totalPrice <= 0) {
+      showToast(
+        'Total Biaya Tidak Valid',
+        'Pastikan nominal paket atau harga kesepakatan lebih dari Rp0 sebelum mengirim.',
         'error'
       );
       return null;
@@ -824,6 +889,7 @@ export function OrderWorkspace({ embedded = false, onSubmitted }: OrderWorkspace
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     const payload = buildOrderPayload();
     if (!payload) return;
 

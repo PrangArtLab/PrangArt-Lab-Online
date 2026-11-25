@@ -37,17 +37,17 @@ export function ClientAuthCard({ onSuccess, compactTitle }: ClientAuthCardProps)
           {compactTitle || 'Masuk ke Ruang Klien'}
         </h2>
         <p className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">
-          Gunakan akun Google Anda untuk mengajukan pesanan, memantau progres produksi secara langsung, mengirim konfirmasi DP/pelunasan, serta berdiskusi dengan Admin Studio.
+          Masuk wajib menggunakan email Google aktif untuk mengajukan pesanan, memantau progres produksi secara langsung, mengirim konfirmasi DP/pelunasan, dan berdiskusi dengan Admin Studio.
         </p>
       </div>
 
       <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-950 p-4 space-y-2 text-xs text-slate-600 dark:text-slate-400">
         <div className="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-200">
           <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span>Autentikasi Aman & Sinkronisasi Seketika</span>
+          <span>Autentikasi Email Google &amp; Sinkronisasi Seketika</span>
         </div>
         <p className="leading-relaxed">
-          Setiap perubahan status pembayaran, balasan catatan revisi, dan akses Master File tersimpan di Cloud Firestore serta mengirimkan notifikasi real-time.
+          Setiap perubahan status pembayaran, catatan revisi, serta akses Master File tersimpan aman dan tersinkronisasi real-time per akun email Google Anda.
         </p>
       </div>
 
@@ -64,7 +64,7 @@ export function ClientAuthCard({ onSuccess, compactTitle }: ClientAuthCardProps)
         className="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-[0_8px_18px_-6px_rgba(79,70,229,0.45)] dark:shadow-none disabled:opacity-60 text-white text-sm font-semibold transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
       >
         <LogIn className="w-4 h-4" />
-        <span>{loading ? 'Menghubungkan ke Google...' : 'Masuk / Daftar dengan Google'}</span>
+        <span>{loading ? 'Menghubungkan ke Email Google...' : 'Masuk / Daftar dengan Email Google'}</span>
       </button>
     </div>
   );

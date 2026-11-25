@@ -478,7 +478,11 @@ export function AdminDashboardPage() {
 
   const handleSavePortfolioItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!siteContent) return;
+    if (!siteContent || contentSaving) return;
+    if (!newPortfolio.title.trim()) {
+      showToast('Judul Kosong', 'Masukkan judul karya portofolio terlebih dahulu.', 'error');
+      return;
+    }
     if (newPortfolio.audioDemoUrl?.trim() && !safeExternalUrl(newPortfolio.audioDemoUrl.trim())) {
       showToast('Tautan Demo Tidak Valid', 'Gunakan tautan URL yang diawali https:// atau http://.', 'error');
       return;
@@ -536,7 +540,11 @@ export function AdminDashboardPage() {
 
   const handleSaveTestimonialItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!siteContent) return;
+    if (!siteContent || contentSaving) return;
+    if (!newTestimonial.name.trim() || !newTestimonial.quote.trim()) {
+      showToast('Isian Belum Lengkap', 'Masukkan nama klien dan kutipan testimoni terlebih dahulu.', 'error');
+      return;
+    }
     setContentSaving(true);
     try {
       const cleanItem: Omit<TestimonialItem, 'id'> = {
@@ -582,10 +590,28 @@ export function AdminDashboardPage() {
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!settingsDraft) return;
+    if (!settingsDraft || contentSaving) return;
+    if (settingsDraft.studioWhatsApp.replace(/\D/g, '').length < 8) {
+      showToast('WhatsApp Studio Tidak Valid', 'Masukkan minimal 8 digit nomor WhatsApp studio.', 'error');
+      return;
+    }
+    const cleanEmail = settingsDraft.studioEmail.trim();
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      showToast('Email Studio Tidak Valid', 'Masukkan alamat email kontak studio yang valid.', 'error');
+      return;
+    }
     setContentSaving(true);
     try {
-      await saveAdminSiteContent({ settings: settingsDraft });
+      await saveAdminSiteContent({
+        settings: {
+          studioWhatsApp: settingsDraft.studioWhatsApp.trim(),
+          studioEmail: cleanEmail,
+          studioAddress: settingsDraft.studioAddress.trim(),
+          studioBankName: settingsDraft.studioBankName.trim(),
+          studioBankAccount: settingsDraft.studioBankAccount.trim(),
+          studioBankHolder: settingsDraft.studioBankHolder.trim(),
+        },
+      });
     } catch (err: unknown) {
       showToast('Gagal Simpan Pengaturan', err instanceof Error ? err.message : 'Error', 'error');
     } finally {
@@ -2023,17 +2049,20 @@ export function AdminDashboardPage() {
                           <span className="text-slate-600 dark:text-slate-400">Add-on Vokal/Player (Rp):</span>
                           <input
                             type="number"
+                            min={0}
                             value={svc.addonPrice}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              const parsed = Number(e.target.value);
+                              const safePrice = Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed) : 0;
                               setCatalogDraft((prev) =>
                                 prev
                                   ? {
                                       ...prev,
-                                      [svcKey]: { ...prev[svcKey], addonPrice: Number(e.target.value || 0) },
+                                      [svcKey]: { ...prev[svcKey], addonPrice: safePrice },
                                     }
                                   : prev
-                              )
-                            }
+                              );
+                            }}
                             className="w-32 rounded-lg border border-slate-300/90 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 font-mono text-xs text-slate-900 dark:text-slate-100 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 focus:outline-none dark:focus:border-indigo-500"
                           />
                         </div>
@@ -2079,9 +2108,12 @@ export function AdminDashboardPage() {
                                   </label>
                                   <input
                                     type="number"
+                                    min={0}
                                     readOnly={isCustom}
                                     value={pkg.price}
-                                    onChange={(e) =>
+                                    onChange={(e) => {
+                                      const parsed = Number(e.target.value);
+                                      const safePrice = Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed) : 0;
                                       setCatalogDraft((prev) =>
                                         prev
                                           ? {
@@ -2090,13 +2122,13 @@ export function AdminDashboardPage() {
                                                 ...prev[svcKey],
                                                 packages: {
                                                   ...prev[svcKey].packages,
-                                                  [pkgKey]: { ...pkg, price: Number(e.target.value || 0) },
+                                                  [pkgKey]: { ...pkg, price: safePrice },
                                                 },
                                               },
                                             }
                                           : prev
-                                      )
-                                    }
+                                      );
+                                    }}
                                     className={`${inputCls} font-mono ${isCustom ? 'opacity-60' : ''}`}
                                   />
                                 </div>

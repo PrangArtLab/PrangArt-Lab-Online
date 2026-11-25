@@ -8,7 +8,9 @@ service cloud.firestore {
     // =========================================================================
 
     function isAuthenticated() {
-      return request.auth != null && request.auth.token.email_verified == true;
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.firebase.sign_in_provider == 'google.com';
     }
 
     function isOwner(userId) {
@@ -16,10 +18,9 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isAuthenticated() && (
-        (request.auth.token.email is string && request.auth.token.email.lower() == 'prangart.lab@gmail.com') ||
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-      );
+      return isAuthenticated()
+        && request.auth.token.email is string
+        && request.auth.token.email.lower() == 'prangart.lab@gmail.com';
     }
 
     function isValidId(id) {
@@ -181,11 +182,9 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Admin registry
+    // Admin registry (exclusively accessible by prangart.lab@gmail.com)
     match /admins/{userId} {
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if isAdmin();
-      allow create, update, delete: if isAdmin();
+      allow get, list, create, update, delete: if isAdmin();
     }
 
     // Client user profiles (strictly private: owner or admin, never public, no client listing)
@@ -198,6 +197,7 @@ service cloud.firestore {
         && incoming().uid == request.auth.uid
         && request.auth.token.email is string
         && incoming().email.lower() == request.auth.token.email.lower()
+        && incoming().email.lower() != 'prangart.lab@gmail.com'
         && incoming().role == 'client'
         && incoming().createdAt == request.time
         && incoming().updatedAt == request.time;
